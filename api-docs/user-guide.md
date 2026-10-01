@@ -522,6 +522,25 @@ Base URL: `http://localhost:3000` (Docker) or `http://localhost:8080` (binary de
 | `GET` | `/api/v1/mesh` | ADR-110 fleet-wide mesh sync map ([iter 29](adr/ADR-110-esp32-c6-firmware-extension.md)) | `{"nodes":{"9":{...},"12":{...}},"total":2}` |
 | `GET` | `/api/v1/nodes/:id/sync` | Single-node mesh sync snapshot (or 404) | `{"offset_us":1163565,"is_leader":false,...}` |
 | `GET` | `/api/v1/mesh/metrics` | ADR-110 mesh state in Prometheus exposition format ([iter 36](adr/ADR-110-esp32-c6-firmware-extension.md)) | `wifi_densepose_mesh_offset_us{node="9"} 1163565\n…` |
+| `GET` | `/api/field` | ADR-262 P3 — latest **signed RuField `FieldEvent`s** from the live sensing cycle, plus the signer pubkey + a `dev_signing_key` flag. Only egress-safe (P1/P2) events are surfaced; identity/biometric (P4/P5) and raw (P0) are held edge-local | `{"spec":"rufield","signer_pubkey_hex":"…","dev_signing_key":true,"events":[…]}` |
+
+### RuField surface (ADR-262 P3)
+
+RuView's live WiFi-CSI sensing now also speaks the standalone **RuField MFS** wire format. Each governed sensing cycle is converted (via the `wifi-densepose-rufield` anti-corruption bridge) into a **signed** `FieldEvent` (`Modality::WifiCsi`, ed25519 `ProvenanceRef`) and surfaced on two additive endpoints:
+
+- `GET /api/field` — the most recent signed events (JSON).
+- `GET /ws/field` — a WebSocket that streams each cycle's signed event (mirrors `/ws/sensing`).
+
+```bash
+curl -s http://localhost:3000/api/field | python -m json.tool          # latest signed FieldEvents
+python -c "import asyncio,websockets; asyncio.run((lambda: websockets.connect('ws://localhost:8765/ws/field'))())"  # stream
+```
+
+Privacy is fail-closed: only egress-safe **P1/P2** events leave the box — raw (P0) and identity/biometric/aggregate (P3–P5) cycles are held **edge-local** and never appear on these endpoints; a no-presence cycle emits **no event**.
+
+**Signing key:** the surface signs with a **dedicated dev/sensing key**, seeded from `WDP_RUFIELD_SIGNING_SEED` (a 64-char hex string or a ≥32-byte value); when unset it falls back to a deterministic dev default and logs a `WARN` (the `dev_signing_key` flag in `/api/field` reflects this). This is a standalone key pending the ADR-262 §8 Q1 key-ownership decision — set `WDP_RUFIELD_SIGNING_SEED` for any real deployment.
+
+> **Honesty (ADR-262 §0/§6):** this is real plumbing on a live endpoint, **not an accuracy claim.** It is the single-link CSI sensing with its existing caveats (no validated room-coordinate accuracy — positions are the "strongest field peak", not calibrated triangulation).
 
 ### Example: Get fleet mesh state (ADR-110)
 
@@ -1113,7 +1132,7 @@ The Observatory is an immersive Three.js visualization that renders WiFi sensing
 
 A pretrained CSI encoder + presence-detection head is published on Hugging Face at [`ruvnet/wifi-densepose-pretrained`](https://huggingface.co/ruvnet/wifi-densepose-pretrained). It was trained on 60,630 frames / 610,615 contrastive triplets (12.2M steps, final loss 0.065) and reports **82.3% held-out temporal-triplet accuracy** (the older "100% presence" figure was measured on a single-class recording and has been retracted) and ~164k embeddings/sec on an Apple M4 Pro.
 
-> **Results & proof.** The SOTA 17-keypoint pose model is published separately at [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) — **82.69% torso-PCK@20** on MM-Fi (83.59% ensemble + TTA), beating MultiFormer (72.25%) and CSI2Pose (68.41%). Browse the auditable [AetherArena leaderboard Space](https://huggingface.co/spaces/ruvnet/aether-arena), the full [MM-Fi study](benchmarks/mmfi-wifi-sensing-study.md), and the [efficiency frontier](benchmarks/wifi-pose-efficiency-frontier.md). Reproduce the deterministic pipeline proof with `python archive/v1/data/proof/verify.py` (must print `VERDICT: PASS`; see [ADR-147 benchmark proof](adr/ADR-147-benchmark-proof.md) and [WITNESS-LOG-028](WITNESS-LOG-028.md)).
+> **Results & proof.** The SOTA 17-keypoint pose model is published separately at [`ruvnet/wifi-densepose-mmfi-pose`](https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose) — **82.69% torso-PCK@20** on MM-Fi (83.59% ensemble + TTA), beating MultiFormer (72.25%) and CSI2Pose (68.41%). Browse the auditable [AetherArena leaderboard Space](https://huggingface.co/spaces/ruvnet/aether-arena), the full [MM-Fi study](benchmarks/mmfi-wifi-sensing-study.md), and the [efficiency frontier](benchmarks/wifi-pose-efficiency-frontier.md). Reproduce the deterministic pipeline proof with `python archive/v1/data/proof/verify.py` (must print `VERDICT: PASS`; see [ADR-168 benchmark proof](adr/ADR-168-benchmark-proof.md) and [WITNESS-LOG-028](WITNESS-LOG-028.md)).
 
 What it ships (and what it does not):
 
@@ -1289,7 +1308,7 @@ Once trained, the adaptive model runs automatically:
 RuView integrates [OccWorld](https://github.com/wzzheng/OccWorld) (ECCV 2024) to predict
 future 3D occupancy from WiFi CSI — extending the Kalman tracker's 5-frame horizon to
 15 predicted frames (~7 s). See [ADR-147](adr/ADR-147-nvidia-cosmos-world-foundation-model-integration.md)
-and the [benchmark proof](adr/ADR-147-benchmark-proof.md) for full details.
+and the [benchmark proof](adr/ADR-168-benchmark-proof.md) for full details.
 
 **Hardware requirement:** NVIDIA GPU with ≥4 GB VRAM (validated: RTX 5080 at 209 ms / 3.4 GB).
 
@@ -1842,6 +1861,23 @@ node scripts/eval-wiflow.js \
   --data data/paired/*.jsonl
 ```
 
+> **Model format boundary:** `train-wiflow-supervised.js` produces the
+> JavaScript WiFlow model `wiflow-v1.json`. There is currently no supported
+> command that converts that JSON model into the sensing server's binary RVF
+> container, and renaming the file to `.rvf` does not convert it. Use the JSON
+> model with the JavaScript evaluation/inference tools. To train a model that
+> the Rust sensing server can load, use its native training path, which writes
+> RVF directly:
+>
+> ```bash
+> cargo run -p wifi-densepose-sensing-server --release -- \
+>   --train --dataset data/mmfi --dataset-type mmfi \
+>   --epochs 100 --save-rvf models/room-model.rvf
+> ```
+>
+> The camera+CSI paired JSONL workflow and the native RVF trainer are separate
+> pipelines today. A JSON-to-RVF exporter is future work.
+
 **Evaluation protocol matters.** Use `eval-wiflow.js` (torso-normalized
 PCK@20, the metric comparable to published WiFi-pose results) on a temporal
 hold-out, and sanity-check that predictions actually vary across frames
@@ -1869,7 +1905,7 @@ Pre-trained models are available on HuggingFace:
 - **SOTA MM-Fi pose model** (82.69% torso-PCK@20) — https://huggingface.co/ruvnet/wifi-densepose-mmfi-pose
 - **AetherArena leaderboard Space** — https://huggingface.co/spaces/ruvnet/aether-arena
 
-Download and start sensing immediately — no datasets, no GPU, no training needed. Results are reproducible via `python archive/v1/data/proof/verify.py` (deterministic SHA-256 proof) — see [ADR-147](adr/ADR-147-benchmark-proof.md).
+Download and start sensing immediately — no datasets, no GPU, no training needed. Results are reproducible via `python archive/v1/data/proof/verify.py` (deterministic SHA-256 proof) — see [ADR-168](adr/ADR-168-benchmark-proof.md).
 
 ### Quick Start with Pre-Trained Models
 
