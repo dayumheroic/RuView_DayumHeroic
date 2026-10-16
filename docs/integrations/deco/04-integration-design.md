@@ -56,14 +56,26 @@ the `/cgi-bin/luci/;stok=` session prefix.
 The client model declares `client_type`, `name`, `mac`, `ip`, `down_speed`,
 `up_speed`, `connection_type` and `online`. These declarations support a
 candidate parser design, not claims that all fields are returned or reliable.
-No authentication keys, credentials, session tokens or protected responses were
-requested. Static file hashes in PR notes support later comparison.
+During that static-only pass no authentication keys, credentials, session tokens
+or protected responses were requested. Static file hashes in PR notes support
+later comparison. Subsequent normal browser navigation in the owner's signed-in
+session observed live UI values (E26–E29), without extracting credentials/session
+material or making custom API requests.
+
+The client UI labels rates KB/s, but this does not yet settle the raw API scale
+or decimal/binary interpretation. Preserve a dash connection value as unknown.
+The per-node selector's label changed during inspection; filtered row membership
+was not witnessed after refresh, so association parsing remains an open test.
+Signed-in status also exposed WAN/LAN fields and radio channel/enable state.
+The firmware table supplies all eight model/revision/firmware tuples. These are
+measured UI capabilities; they do not establish a standalone collector contract.
 
 Strict HTTPS verification failed with an untrusted-chain error. A subsequent
 public-certificate-only inspection timed out during the handshake and produced
 no fingerprint. No trust was installed and no credentials were sent. Browser
-inspection and verified certificate enrollment remain the next transport gate;
-do not substitute a working HTTP login for that decision.
+inspection and verified certificate enrollment remain necessary for the future
+collector transport. The owner's successful browser session and origin allowlist
+change permit UI research; neither verifies the collector's TLS trust chain.
 
 ```mermaid
 flowchart LR

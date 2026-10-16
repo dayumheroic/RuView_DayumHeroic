@@ -41,6 +41,10 @@ capture. Baseline commits are pinned in SOURCES and CC-HANDOFF.
 | E23 | MEASURED | One HTTPS root GET with normal certificate validation; one later public-certificate-only TLS inspection with a 4-second socket timeout | Strict HTTPS failed with `CERTIFICATE_VERIFY_FAILED` (unable to get local issuer certificate). Certificate-only inspection subsequently timed out during handshake; no certificate fingerprint obtained. The latter temporarily skipped verification only to inspect the public certificate, sent no HTTP request or credentials, and changed no trust store. Browser inspection remains pending |
 | E24 | MEASURED (owner-supplied screenshot) | Two desktop screenshots supplied by owner, named with local 15:02 timestamps | First shows the stock owner-password login page with Chrome's Not Secure indicator. Second shows a signed-in network-map dashboard displaying eight Deco units and twelve clients, plus main M5 information. This is evidence of the owner's UI session, not an agent-authenticated API capture or a verified certificate chain. Network names, room labels, addresses and masked password controls remain private |
 | E25 | MEASURED (tool restriction) | Attempt to bind the existing in-app browser tab through the supported browser tool | Tool rejected page observation under its URL security policy, reporting an unsupported protocol. No router UI content was acquired through that tool, no credential/session material extracted, and no alternate browser/terminal route used to work around the denial. Official browser-extension docs confirm existing-session support, but managed browser policies still apply. Router automation is unconfirmed |
+| E26 | MEASURED (permission change and live UI) | Owner explicitly reported adding the router origin to allowed sites and supplied a settings screenshot; then supported Chrome-tab inventory and read-only page binding | Chrome access succeeded after this supported permission-state change. Signed-in Network Map displayed eight units, twelve clients and a node hierarchy. No browser security warning was dismissed by the agent and no settings were changed by the agent |
+| E27 | MEASURED (live UI) | Network Map → Clients, then open the per-node selector and select main | Client grid displayed Type, Information, Real-time Rate and Connection columns. Paired rates were labelled KB/s, with non-zero samples. Connection displayed Wireless(5G) or a dash. Selector lists eight nodes and updates its selected label; refreshed row membership was not verified. Names/addresses/room labels omitted |
+| E28 | MEASURED (live UI) | Advanced → Status | Internet reports Online / Dynamic IP. Main WAN is on the former upstream subnet with the old gateway; main LAN is on the Deco subnet. This explains the prior attachment/routing issue. Radio enable/channel fields and guest/IoT enable flags are visible. No dedicated operating-mode value or NAT behavior was tested |
+| E29 | MEASURED (live UI inventory) | Advanced → System → Firmware Upgrade; read the loaded table only; return to Network Map | Two M5(3.2) on 1.9.5 Build 20260602 Rel. 25369; two M4R(2.0) on 1.8.2 Build 20251027 Rel. 36869; four E4R(4.0) on 1.1.2 Build 20250226 Rel. 35508. All eight rows observed. Initial table was empty before asynchronous loading; the loaded table was subsequently read. No Check for Upgrades, Browse, Upgrade, reboot or configuration control was activated |
 
 ### Target static-source fingerprints
 
@@ -61,8 +65,11 @@ Changing firmware may change these hashes; they are not signed attestations.
 
 Raw network identifiers, owner account data and command transcripts are omitted.
 All addresses used in future shared fixtures must be synthetic or redacted.
-No authenticated Deco API query, service assessment, exploit, firmware operation
-or live RuView build has been performed.
+The agent has now observed signed-in UI values through normal status-page
+navigation. No standalone/custom authenticated API request, session extraction,
+service assessment, exploit, firmware operation or live RuView build has been
+performed. The owner's browser session supplied authentication without sharing
+credentials with the agent.
 
 ## Validation status
 
@@ -80,22 +87,22 @@ identifiers and separation of proposed vs existing interfaces. Repository
 visibility was verified as public; no raw private source or LAN transcript is
 included. Only research documents are staged; improvements remains unchanged.
 
-Runtime tests, Rust workspace build and hardware acceptance are not applicable
-to this documentation-only change and have not been run. Future parser/provider
+Signed-in stock UI validation ran as E26–E29. Runtime tests, Rust workspace
+build and bridge hardware acceptance are not applicable to this documentation-only
+change and have not been run. Future parser/provider
 code requires the focused checks in playbooks 04/05 plus the relevant repository
 gates. Sparse guidance is not a substitute for those checks.
 
 ## Open questions and next action
 
-Local reachability and main-unit neighbor identity are established (E20/E21).
-The owner has supplied a screenshot of a signed-in dashboard (E24); no credentials
-were given to the agent. Static status-read candidates (E22) remain untested as
-authenticated responses. Resolve the browser-policy restriction through supported
-product controls/support before agent browser automation; do not change tools to
-evade it. Owner-provided read-only screenshots can continue the inventory without
-that blocked action. TLS trust, operating mode, revisions, region and remaining
-models still require verification. A vulnerability assessment and collector
-implementation remain future gated work.
+Local reachability, main identity, stock UI status/client fields and all eight
+model/revision/firmware tuples are established (E20–E29). The owner resolved the
+browser origin permission through supported controls, allowing read-only Chrome
+inspection. Standalone response capture, rate scale, per-node filter membership,
+complete link types, region, dedicated operating mode and collector TLS trust
+remain open. The next collection gate is a bounded, permission-cleared response
+fixture and reviewed local auth/transport design; browser cookies/keys are not
+to be extracted. Vulnerability assessment and implementation remain future work.
 
 ## Continuation entry template
 

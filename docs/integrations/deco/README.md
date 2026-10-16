@@ -8,8 +8,11 @@ This is a research and implementation plan, not a working collector or a claim
 of hardware compatibility. App screenshots identify the main M5 firmware and
 one M4R firmware. After joining the Deco Wi-Fi, the Mac reached the main unit's
 stock web UI and its local neighbor identity matched the app screenshot.
-Static UI declarations reveal status-read candidates; authenticated telemetry
-responses and HTTPS trust remain unverified. See E20–E23 in PR notes.
+After the owner explicitly allowed the router origin in Chrome permissions,
+agent read-only browser access succeeded. The signed-in UI exposed client rates,
+connection types, network status and the complete model/revision/firmware table.
+Standalone collector response contracts and HTTPS trust remain unverified.
+See E20–E29 in PR notes; the measured inventory is in playbook 01.
 
 | Playbook | Desired state and intended effect | Completion evidence |
 |---|---|---|

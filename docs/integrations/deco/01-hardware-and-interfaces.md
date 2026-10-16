@@ -52,30 +52,45 @@ shell arguments, screenshots, fixtures or PRs.
 
 | Alias | Role | Label model | HW/region | Full firmware | Mode/uplink | Evidence |
 |---|---|---|---|---|---|---|
-| main-01 | Main (app) | M5 (app) | Unknown | 1.9.5 Build 20260602 Rel. 25369 | Operating mode unknown | E17: owner-provided app screenshots; no local API response yet |
-| node-01 | Satellite (app) | M4R (app) | Unknown | 1.8.2 Build 20251027 Rel. 36869 | App shows wireless link to main on 2.4/5 GHz | E17: app screenshot; exact revision still unknown |
-| remaining | Count unknown | E4/M4R reported | Unknown | Unknown | Unknown | Owner reported two E4s; reconcile inventory |
+| main-01 | Main | M5 | 3.2 / region unknown | 1.9.5 Build 20260602 Rel. 25369 | Distinct WAN/LAN interfaces observed | E17, E28, E29 |
+| node-01 | Satellite | M4R | 2.0 / region unknown | 1.8.2 Build 20251027 Rel. 36869 | E17 shows wireless link to main | E17, E29 |
+| node-02 | Satellite | M5 | 3.2 / region unknown | 1.9.5 Build 20260602 Rel. 25369 | Uplink shown in UI hierarchy; link type unverified | E26, E29 |
+| node-03 | Satellite | M4R | 2.0 / region unknown | 1.8.2 Build 20251027 Rel. 36869 | Link type unverified | E29 |
+| node-04 | Satellite | E4R | 4.0 / region unknown | 1.1.2 Build 20250226 Rel. 35508 | Link type unverified | E29 |
+| node-05 | Satellite | E4R | 4.0 / region unknown | 1.1.2 Build 20250226 Rel. 35508 | Link type unverified | E29 |
+| node-06 | Satellite | E4R | 4.0 / region unknown | 1.1.2 Build 20250226 Rel. 35508 | Link type unverified | E29 |
+| node-07 | Satellite | E4R | 4.0 / region unknown | 1.1.2 Build 20250226 Rel. 35508 | Link type unverified | E29 |
+
+The signed-in firmware table resolves the earlier reported inventory discrepancy:
+two M5, two M4R and four E4R units. Revisions above are the UI's model suffixes;
+physical label/region checks remain useful before applying regional advisories.
+Room names and identifier mappings are omitted from public notes.
 
 The supplied app views show client counts, per-node/per-client rates and signal
 indicators. These are measured observations of what the app displays, not proof
 that a local API exposes the same fields. The earlier subnet mismatch (E18) is
 resolved: the Mac joined the Deco LAN, and its gateway/ARP identity matches the
 main unit in the app (E20). Local root and index pages returned HTTP 200 (E21).
-The broader upstream/downstream topology and operating mode remain unverified.
+The signed-in Status page subsequently showed the main unit's WAN on the
+previous upstream subnet and its LAN on the Deco subnet (E28), explaining the
+original routing mismatch. It reports a Dynamic IP internet connection and
+separate WAN/LAN interfaces; a dedicated operating-mode field was not inspected.
 
 ## Capability matrix
 
-These remain **CLAIMED collection capabilities**, not measured authenticated
-responses. E22 provides **MEASURED static source evidence** for node/client and
-performance reads on the main unit's current UI. Community source S2 supplies
-additional polling precedent; the owner's M4R/E4 revisions still need testing.
+The table separates **MEASURED signed-in UI observations** from unverified
+standalone collection capabilities. E22 also supplies static source evidence.
+No reusable API response fixture or credentialed collector has been validated.
 
 | Candidate data | Validation on target | Limitation |
 |---|---|---|
-| Nodes, versions, client list, association | Compare status response with app and labels | Private interface can change by firmware |
-| Connection type and traffic rates | Verify units, interval and per-client coverage | Rates are not necessarily cumulative bytes |
-| Backhaul/status indicators | Compare each satellite and wired/wireless uplink | Indicator scale is not calibrated dBm |
-| CPU/memory diagnostics | Query only if discovered; verify scale | Optional; absence must not become zero |
+| Node count, model, revision and firmware | MEASURED UI: eight entries, exact tuples above (E26/E29) | Standalone response and region still unverified |
+| Client list and connection type | MEASURED UI: twelve displayed clients; names/addresses and Wireless(5G) or dash (E27) | Dash means unknown; UI freshness/completeness unverified |
+| Per-client traffic rates | MEASURED UI: paired rates labelled KB/s; non-zero values observed (E27) | Raw API units, decimal/binary scale and accuracy still unverified |
+| Client association | UI provides an all-node/per-node selector (E27) | Selection label changed, but refreshed row membership was not verified |
+| Topology and backhaul indicators | MEASURED UI: hierarchy for eight nodes (E26) | Complete link type/quality and calibrated dBm remain unverified |
+| WAN/LAN and radio status | MEASURED UI: separate interfaces, Dynamic IP, radio channels and guest/IoT enable flags (E28) | Describes the observed instant, not a validated polling contract |
+| CPU/memory diagnostics | Static declarations only (E22); no live values observed | Optional; absence must not become zero |
 | Raw complex CSI | Require documented export plus real capture | No verified stock-Deco path found |
 | Human occupancy/pose/vitals | Require a separate validated sensing source | Never infer from client association/counters |
 

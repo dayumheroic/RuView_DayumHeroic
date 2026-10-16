@@ -30,26 +30,30 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
 
 ## Findings and next actions
 
-1. Read [PR notes](PR-NOTES.md) and [playbooks](README.md). The Mac is confirmed;
-   no Deco telemetry or vulnerability has been validated yet.
+1. Read [PR notes](PR-NOTES.md) and [playbooks](README.md). Read-only Chrome UI
+   access now works after the owner added the router origin to allowed sites
+   (E26). UI telemetry/inventory observations are measured; a standalone collector
+   contract and vulnerability findings remain unvalidated.
 2. E17 provides app-view evidence of the main address and two firmware builds.
    E20 supersedes the routing problem in E18: the owner joined the Deco Wi-Fi,
    the main address is on-link, and the gateway neighbor MAC matches the app.
-   HTTP root/index pages and static models are reachable (E21/E22). Verify
-   operating mode separately; do not infer the full topology from connectivity.
-3. Complete the exact device inventory, especially remaining models, region and
-   hardware revisions. Main M5 and one M4R app firmware views are recorded in
-   playbook 01; this does not validate their local API. Record aliases in PR notes;
-   keep addresses, MACs, account data and room names private.
+   HTTP root/index pages and static models are reachable (E21/E22). Signed-in
+   Status confirms the main WAN uses the former upstream subnet and LAN uses
+   the Deco subnet (E28). A dedicated operating-mode field remains uninspected.
+3. The live firmware table resolves all eight units: two M5(3.2), two M4R(2.0),
+   four E4R(4.0), with builds recorded in playbook 01 (E29). Confirm regions and
+   physical labels before matching regional advisories. Keep addresses, MACs,
+   account data and room names private.
 4. Inspect the endpoint declarations in playbook 04. Strict HTTPS verification
    failed and a certificate-inspection handshake timed out (E23). Resolve the
    transport gate before automated credential use. The owner later supplied a
    signed-in Chrome dashboard screenshot (E24); no password or protected API
    request was submitted by the agent. The supported browser tool rejected page
-   access under its URL policy (E25). Do not evade that block via Chrome or
-   terminal/session extraction. Continue from owner-provided read-only inventory
-   screenshots while supported product controls/support resolve browser access.
-   Community integration remains a reference; avoid control services.
+   access under its URL policy (E25). The owner subsequently changed the origin's
+   permission through the supported app controls; Chrome read access then
+   succeeded (E26). This is a recorded permission-state change, not a bypass.
+   No custom API requests, credential/session extraction or full developer-mode
+   access were used. Community integration remains a reference; avoid controls.
 5. Update the matrix with sanitized evidence. Choose the access path only
    after observing a real response. Then implement the fixture parser and
    bridge contract before connecting live collection.
