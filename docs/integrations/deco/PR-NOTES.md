@@ -31,6 +31,7 @@ capture. Baseline commits are pinned in SOURCES and CC-HANDOFF.
 | E13 | MEASURED | Tracked workflow inventory | Workflows are under `.github/workflows.disabled` at baseline; no active workflow files found. No CI-green claim is made |
 | E14 | MEASURED | One unauthenticated HTTP GET to historical main address, `curl --noproxy '*' --connect-timeout 3 --max-time 5 --max-filesize 65536`, no redirects | Connection timed out after about 3 seconds, exit 28, status 000, zero response bytes. No login or device identity obtained; no conclusion about API support |
 | E15 | MEASURED | `dscacheutil -q host -a name` for the two documented Deco management hostnames | Neither returned an address in this session; no hostname-derived target selected |
+| E16 | MEASURED | Follow-up requested by owner: `ipconfig getpacket en0`, `route -n get default`, `arp -an`, bounded `dig +time=2 +tries=1` lookups, one unauthenticated HTTP GET to the DHCP-advertised gateway | DHCP and route agree on the current upstream gateway, but no Deco identity is established. One management-name lookup timed out, the other returned NXDOMAIN. Gateway HTTP read timed out (exit 28, zero bytes); no authentication or scan performed. App inventory remains the next source of target identity |
 
 Raw network identifiers, owner account data and command transcripts are omitted.
 All addresses used in future shared fixtures must be synthetic or redacted.
