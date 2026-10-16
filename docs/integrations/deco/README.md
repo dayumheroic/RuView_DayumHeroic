@@ -5,8 +5,11 @@ M5/M4R mesh, possible E4 nodes, and a lightweight macOS bridge. No flashing,
 firmware upgrades/downgrades, factory resets, or router configuration changes.
 
 This is a research and implementation plan, not a working collector or a claim
-of hardware compatibility. The first session measured the Mac and its routes;
-Deco identity, firmware and authenticated telemetry remain unverified.
+of hardware compatibility. App screenshots identify the main M5 firmware and
+one M4R firmware. After joining the Deco Wi-Fi, the Mac reached the main unit's
+stock web UI and its local neighbor identity matched the app screenshot.
+Static UI declarations reveal status-read candidates; authenticated telemetry
+responses and HTTPS trust remain unverified. See E20–E23 in PR notes.
 
 | Playbook | Desired state and intended effect | Completion evidence |
 |---|---|---|

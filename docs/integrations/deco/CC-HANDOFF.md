@@ -32,20 +32,20 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
 
 1. Read [PR notes](PR-NOTES.md) and [playbooks](README.md). The Mac is confirmed;
    no Deco telemetry or vulnerability has been validated yet.
-2. E17 now provides app-view evidence of the main address and two firmware builds.
-   The Mac still routes that address via an upstream gateway on another subnet
-   (E18). Connect the Mac to the Deco's main Wi-Fi or confirmed LAN port and
-   recheck its route. Verify operating mode in the owner's existing app.
-   Do not scan the gateway merely because it is reachable.
-   One unauthenticated HTTP request to that historical address timed out;
-   management hostname resolution returned no address. Avoid unchanged retries.
+2. E17 provides app-view evidence of the main address and two firmware builds.
+   E20 supersedes the routing problem in E18: the owner joined the Deco Wi-Fi,
+   the main address is on-link, and the gateway neighbor MAC matches the app.
+   HTTP root/index pages and static models are reachable (E21/E22). Verify
+   operating mode separately; do not infer the full topology from connectivity.
 3. Complete the exact device inventory, especially remaining models, region and
    hardware revisions. Main M5 and one M4R app firmware views are recorded in
    playbook 01; this does not validate their local API. Record aliases in PR notes;
    keep addresses, MACs, account data and room names private.
-4. Inspect stock status reads using local secure credential entry. Community
-   integration is a reference only. Review auth/session behavior and pin source
-   before reuse; avoid imported reboot/control services.
+4. Inspect the endpoint declarations in playbook 04. Strict HTTPS verification
+   failed and a certificate-inspection handshake timed out (E23). Resolve the
+   browser/certificate transport gate before local credential entry; no password
+   or protected API request has been submitted. Community integration remains
+   a reference. Review auth/session behavior before reuse; avoid control services.
 5. Update the matrix with sanitized evidence. Choose the access path only
    after observing a real response. Then implement the fixture parser and
    bridge contract before connecting live collection.

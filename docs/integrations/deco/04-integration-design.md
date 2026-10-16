@@ -38,6 +38,33 @@ Cloud-only access, undocumented binary extraction or exploit-dependent collectio
 does not satisfy the first local bridge gate. If no local path is verified,
 record that outcome and pause the collector implementation at fixture mode.
 
+### Observed stock UI declarations (E21/E22)
+
+After the owner connected the Mac to the mesh, the verified main unit returned
+HTTP 200 at `/` with a meta-refresh to `/webpages/index.html`. That index also
+returned HTTP 200. Static files were read without executing downloaded code,
+logging in, or querying protected status endpoints. `js/app/url.js` declares
+the `/cgi-bin/luci/;stok=` session prefix.
+
+| UI source under `/webpages/` | Declared route / observation | Validation still required |
+|---|---|---|
+| `modules/login/localLogin/models.js` | `/login?form=keys` and `/login?form=auth` read proxies; `/login?form=login` uses `operation=login` | Review the complete crypto/session flow and transport before credential use |
+| `modules/networkMap/mapClients/models.js` | `/admin/client?form=client_list`; default `device_mac` parameter | Authenticated schema, complete node coverage and rate units |
+| `modules/networkMap/mapRouter/models.js` | `/admin/device?form=device_list`, explicit `operation=read` | Model/revision/firmware coverage and per-node identity |
+| Same router model source | `/admin/network?form=performance`; `cpu_usage` / `mem_usage` multiplied by 100 for UI percentages | Actual value range, availability and response error handling |
+
+The client model declares `client_type`, `name`, `mac`, `ip`, `down_speed`,
+`up_speed`, `connection_type` and `online`. These declarations support a
+candidate parser design, not claims that all fields are returned or reliable.
+No authentication keys, credentials, session tokens or protected responses were
+requested. Static file hashes in PR notes support later comparison.
+
+Strict HTTPS verification failed with an untrusted-chain error. A subsequent
+public-certificate-only inspection timed out during the handshake and produced
+no fingerprint. No trust was installed and no credentials were sent. Browser
+inspection and verified certificate enrollment remain the next transport gate;
+do not substitute a working HTTP login for that decision.
+
 ```mermaid
 flowchart LR
   Deco[Stock Deco status interface] --> Collector[Local allowlisted collector]

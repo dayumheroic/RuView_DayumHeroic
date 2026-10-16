@@ -58,16 +58,17 @@ shell arguments, screenshots, fixtures or PRs.
 
 The supplied app views show client counts, per-node/per-client rates and signal
 indicators. These are measured observations of what the app displays, not proof
-that a local API exposes the same fields. The Mac's measured local subnet differs
-from the main address shown in the app (E18); establish a path onto the Deco LAN
-before repeating login-page checks. An upstream/downstream router arrangement is
-a hypothesis, not yet a verified topology.
+that a local API exposes the same fields. The earlier subnet mismatch (E18) is
+resolved: the Mac joined the Deco LAN, and its gateway/ARP identity matches the
+main unit in the app (E20). Local root and index pages returned HTTP 200 (E21).
+The broader upstream/downstream topology and operating mode remain unverified.
 
 ## Capability matrix
 
-All entries below are **CLAIMED candidates**, not measured Deco results.
-Community source S2 reports a local polling approach tested with M4/M5;
-the owner's exact M4R/E4 revisions and firmware still need testing.
+These remain **CLAIMED collection capabilities**, not measured authenticated
+responses. E22 provides **MEASURED static source evidence** for node/client and
+performance reads on the main unit's current UI. Community source S2 supplies
+additional polling precedent; the owner's M4R/E4 revisions still need testing.
 
 | Candidate data | Validation on target | Limitation |
 |---|---|---|
@@ -77,6 +78,8 @@ the owner's exact M4R/E4 revisions and firmware still need testing.
 | CPU/memory diagnostics | Query only if discovered; verify scale | Optional; absence must not become zero |
 | Raw complex CSI | Require documented export plus real capture | No verified stock-Deco path found |
 | Human occupancy/pose/vitals | Require a separate validated sensing source | Never infer from client association/counters |
+
+See playbook 04 for the endpoint declarations and response-validation gate.
 
 ## Evidence and completion gate
 

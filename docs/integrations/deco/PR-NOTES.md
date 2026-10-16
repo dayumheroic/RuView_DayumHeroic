@@ -35,6 +35,27 @@ capture. Baseline commits are pinned in SOURCES and CC-HANDOFF.
 | E17 | MEASURED (app screenshot inspection) | Owner-supplied Photos 2/4 show main Device Info; Photo 3 shows satellite Device Info; Photos 1/5/6/7 show mesh/client views | Main M5: 1.9.5 Build 20260602 Rel. 25369. Satellite M4R: 1.8.2 Build 20251027 Rel. 36869, app reports wireless uplink to main. App also displays rates, clients and signal indicators. This supersedes E07 for these two units; revisions, region and remaining models remain unknown. Screenshots remain private; no local API/hardware capture claim |
 | E18 | MEASURED | After screenshots: `ipconfig getifaddr en0`, `route -n get default`, `route -n get` screenshot-confirmed main address, `arp -an` | Mac remains on a different local subnet and routes the main address via its current upstream gateway. No new HTTP attempt or scan. A different Wi-Fi attachment/upstream router is a topology hypothesis; no evidence yet of deliberate management blocking |
 | E19 | MEASURED | Owner supplied the Deco SSID. Exact-match check of `networksetup -listpreferredwirelessnetworks en0`; one `networksetup -setairportnetwork en0` attempt with that saved SSID; local route recheck | Saved entry exists, but join attempt reported failure -3900 despite process exit 0. Current address/route stayed on the upstream subnet. No password was retrieved, supplied or changed. Manual Wi-Fi selection is the next step; failure cause is not established. SSID omitted from public notes |
+| E20 | MEASURED | After owner manually joined mesh Wi-Fi: `ipconfig getifaddr en0`, `ipconfig getpacket en0`, `route -n get default`, route to confirmed main unit, `arp -an` | Mac is now on the main unit's local subnet; DHCP advertises that unit as router and the on-link neighbor MAC exactly matches the main M5 app screenshot. This resolves the reachability prerequisite from E18/E19; identifiers remain private. Witness `2026-10-16T19:57:47Z` |
+| E21 | MEASURED | Unauthenticated same-origin GETs using Python urllib, proxies/automatic redirects disabled, 4-second timeout, bounded response bodies | Root HTTP 200 (272 bytes), observed meta-refresh to `/webpages/index.html`; index HTTP 200 (1688 bytes). Static config, UI framework and four model/controller assets also returned HTTP 200. No downloaded JavaScript was executed |
+| E22 | MEASURED (target static-source inspection) | Read `config/models.json`, `config/modules.json`, `js/app/url.js`, and declared local-login/client/router UI model sources | Main firmware UI declares session-based login plus client-list, device-list and CPU/memory routes/fields. Playbook 04 records the candidate contract. This is target-served static source evidence, not authenticated API response validation; no CSI capability is established |
+| E23 | MEASURED | One HTTPS root GET with normal certificate validation; one later public-certificate-only TLS inspection with a 4-second socket timeout | Strict HTTPS failed with `CERTIFICATE_VERIFY_FAILED` (unable to get local issuer certificate). Certificate-only inspection subsequently timed out during handshake; no certificate fingerprint obtained. The latter temporarily skipped verification only to inspect the public certificate, sent no HTTP request or credentials, and changed no trust store. Browser inspection remains pending |
+
+### Target static-source fingerprints
+
+SHA-256 of bounded unauthenticated responses; raw HTML/JavaScript remains in
+private temporary storage and is not copied into this PR. Reproduce by reading
+the named static paths from the locally verified main unit without credentials.
+Changing firmware may change these hashes; they are not signed attestations.
+
+| Path under `/webpages/` | SHA-256 |
+|---|---|
+| `index.html` | `905387ce9ae5eb4a69294d5870ba93984a2e48983d585abd1eda76f1016d71dd` |
+| `js/app/url.js` | `4f114efeb90e2ede1e40563ac1d865ca085d959dcdab258b249ca3ec07e5b969` |
+| `js/su/frame.js` | `be5f3c05a9319006dff9e342706b6dc604ff115e937acfb805ea13006e6a8b62` |
+| `modules/login/localLogin/models.js` | `1c6fc5fe6aecf90b0c794b4ea2d3cfcee923ecd5ebe83b904b648b13b5a2ab12` |
+| `modules/login/localLogin/controllers.js` | `c27edcdeb8d008dc7e50ab07652684930cfc3d27fbafa3127c07c799907eb6ed` |
+| `modules/networkMap/mapClients/models.js` | `871410325bfed86b6da9601e4faae65e133d5ea8ab74f6cf2cf26641b0d46a75` |
+| `modules/networkMap/mapRouter/models.js` | `eadd8cb52a7b70161d0cdd66a4aaf7a3b6ee9a8f015b0eb1565115b1c1f75128` |
 
 Raw network identifiers, owner account data and command transcripts are omitted.
 All addresses used in future shared fixtures must be synthetic or redacted.
@@ -64,14 +85,12 @@ gates. Sparse guidance is not a substitute for those checks.
 
 ## Open questions and next action
 
-The main address and two firmware builds are now visible in owner-supplied app
-screenshots (E17). Connect the Mac to the Deco's main Wi-Fi or a confirmed Deco
-LAN port, then recheck DHCP/routing before another bounded management-page read.
-Confirm operating mode, revisions, region and the remaining node inventory.
-Authenticated status reads follow only after local reachability is established,
-using locally entered credentials. Do not derive a scan target from the current
-default gateway or a presumed IP range. A vulnerability assessment and collector
-implementation remain future gated work.
+Local reachability and main-unit neighbor identity are established (E20/E21).
+The firmware's UI supplies status-read candidates (E22); their responses remain
+untested. Resolve browser/TLS trust (E23) before credentials are entered locally
+and before an authenticated status-read session. Confirm operating mode,
+revisions, region and the remaining node inventory. A vulnerability assessment
+and collector implementation remain future gated work.
 
 ## Continuation entry template
 
