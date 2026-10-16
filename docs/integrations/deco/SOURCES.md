@@ -16,7 +16,9 @@ Do not equate a documentation claim with a test on the owner's network.
 | S8 | [improvements catalog](https://github.com/dayumheroic/improvements/blob/d0e906c9538221f76a84cfaace6744b542674b2a/CATALOG.md) and [README](https://github.com/dayumheroic/improvements/blob/d0e906c9538221f76a84cfaace6744b542674b2a/README.md) | Asset scope, reference collection and license convention; private source, no copied tool code here |
 | S9 | [REA asset](https://github.com/dayumheroic/improvements/blob/d0e906c9538221f76a84cfaace6744b542674b2a/reverse-engineering/rea/ASSET.md) and [power-pwn asset](https://github.com/dayumheroic/improvements/blob/d0e906c9538221f76a84cfaace6744b542674b2a/security/power-pwn/ASSET.md) | Exact vendored pins; no tool execution or comprehensive audit |
 
-The prior Work chat supplies **CLAIMED/user-reported** M5 main, M4R satellite
-and two E4s. Its screenshots were not revalidated in this session. The reported
-main address is retained only in private local notes. Do not copy the prior
-conversation or screenshots into a public PR.
+The prior Work chat supplies **CLAIMED/user-reported** inventory including two
+E4s. New owner-supplied screenshots were inspected in this session: E17 confirms
+the app displays an M5 main and M4R satellite with the firmware builds recorded
+in the inventory. This is app-view evidence, not authenticated local API evidence.
+Addresses, MACs, network/room names and screenshots remain private. Do not copy
+the prior conversation or screenshots into a public PR.

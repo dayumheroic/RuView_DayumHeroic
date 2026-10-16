@@ -32,14 +32,16 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
 
 1. Read [PR notes](PR-NOTES.md) and [playbooks](README.md). The Mac is confirmed;
    no Deco telemetry or vulnerability has been validated yet.
-2. Verify the main Deco address/network mode in the owner's existing app.
-   VPN removal changed the default route to Wi-Fi but did not establish that
-   the historically reported Deco address is on-link. Do not scan the gateway
-   merely because it is reachable.
+2. E17 now provides app-view evidence of the main address and two firmware builds.
+   The Mac still routes that address via an upstream gateway on another subnet
+   (E18). Connect the Mac to the Deco's main Wi-Fi or confirmed LAN port and
+   recheck its route. Verify operating mode in the owner's existing app.
+   Do not scan the gateway merely because it is reachable.
    One unauthenticated HTTP request to that historical address timed out;
    management hostname resolution returned no address. Avoid unchanged retries.
-3. Complete the exact device inventory, especially M5/M4R/E4 discrepancies,
-   region, hardware revision and firmware build. Record aliases in PR notes;
+3. Complete the exact device inventory, especially remaining models, region and
+   hardware revisions. Main M5 and one M4R app firmware views are recorded in
+   playbook 01; this does not validate their local API. Record aliases in PR notes;
    keep addresses, MACs, account data and room names private.
 4. Inspect stock status reads using local secure credential entry. Community
    integration is a reference only. Review auth/session behavior and pin source

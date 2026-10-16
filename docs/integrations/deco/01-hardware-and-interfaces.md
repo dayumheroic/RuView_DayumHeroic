@@ -52,9 +52,16 @@ shell arguments, screenshots, fixtures or PRs.
 
 | Alias | Role | Label model | HW/region | Full firmware | Mode/uplink | Evidence |
 |---|---|---|---|---|---|---|
-| main-01 | Main (reported) | M5 (reported) | Unknown | Unknown | Unknown | Prior chat; needs device verification |
-| node-01 | Satellite (reported) | M4R (reported) | Unknown | Unknown | Unknown | Prior chat; needs device verification |
+| main-01 | Main (app) | M5 (app) | Unknown | 1.9.5 Build 20260602 Rel. 25369 | Operating mode unknown | E17: owner-provided app screenshots; no local API response yet |
+| node-01 | Satellite (app) | M4R (app) | Unknown | 1.8.2 Build 20251027 Rel. 36869 | App shows wireless link to main on 2.4/5 GHz | E17: app screenshot; exact revision still unknown |
 | remaining | Count unknown | E4/M4R reported | Unknown | Unknown | Unknown | Owner reported two E4s; reconcile inventory |
+
+The supplied app views show client counts, per-node/per-client rates and signal
+indicators. These are measured observations of what the app displays, not proof
+that a local API exposes the same fields. The Mac's measured local subnet differs
+from the main address shown in the app (E18); establish a path onto the Deco LAN
+before repeating login-page checks. An upstream/downstream router arrangement is
+a hypothesis, not yet a verified topology.
 
 ## Capability matrix
 

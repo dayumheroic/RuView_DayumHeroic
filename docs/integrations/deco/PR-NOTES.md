@@ -32,6 +32,8 @@ capture. Baseline commits are pinned in SOURCES and CC-HANDOFF.
 | E14 | MEASURED | One unauthenticated HTTP GET to historical main address, `curl --noproxy '*' --connect-timeout 3 --max-time 5 --max-filesize 65536`, no redirects | Connection timed out after about 3 seconds, exit 28, status 000, zero response bytes. No login or device identity obtained; no conclusion about API support |
 | E15 | MEASURED | `dscacheutil -q host -a name` for the two documented Deco management hostnames | Neither returned an address in this session; no hostname-derived target selected |
 | E16 | MEASURED | Follow-up requested by owner: `ipconfig getpacket en0`, `route -n get default`, `arp -an`, bounded `dig +time=2 +tries=1` lookups, one unauthenticated HTTP GET to the DHCP-advertised gateway | DHCP and route agree on the current upstream gateway, but no Deco identity is established. One management-name lookup timed out, the other returned NXDOMAIN. Gateway HTTP read timed out (exit 28, zero bytes); no authentication or scan performed. App inventory remains the next source of target identity |
+| E17 | MEASURED (app screenshot inspection) | Owner-supplied Photos 2/4 show main Device Info; Photo 3 shows satellite Device Info; Photos 1/5/6/7 show mesh/client views | Main M5: 1.9.5 Build 20260602 Rel. 25369. Satellite M4R: 1.8.2 Build 20251027 Rel. 36869, app reports wireless uplink to main. App also displays rates, clients and signal indicators. This supersedes E07 for these two units; revisions, region and remaining models remain unknown. Screenshots remain private; no local API/hardware capture claim |
+| E18 | MEASURED | After screenshots: `ipconfig getifaddr en0`, `route -n get default`, `route -n get` screenshot-confirmed main address, `arp -an` | Mac remains on a different local subnet and routes the main address via its current upstream gateway. No new HTTP attempt or scan. A different Wi-Fi attachment/upstream router is a topology hypothesis; no evidence yet of deliberate management blocking |
 
 Raw network identifiers, owner account data and command transcripts are omitted.
 All addresses used in future shared fixtures must be synthetic or redacted.
@@ -61,8 +63,11 @@ gates. Sparse guidance is not a substitute for those checks.
 
 ## Open questions and next action
 
-Confirm the main Deco's current address and router/AP mode in the owner app;
-inventory each unit and full firmware. Then validate one status-read session
+The main address and two firmware builds are now visible in owner-supplied app
+screenshots (E17). Connect the Mac to the Deco's main Wi-Fi or a confirmed Deco
+LAN port, then recheck DHCP/routing before another bounded management-page read.
+Confirm operating mode, revisions, region and the remaining node inventory.
+Authenticated status reads follow only after local reachability is established,
 using locally entered credentials. Do not derive a scan target from the current
 default gateway or a presumed IP range. A vulnerability assessment and collector
 implementation remain future gated work.
