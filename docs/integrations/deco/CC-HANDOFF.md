@@ -43,9 +43,13 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
    keep addresses, MACs, account data and room names private.
 4. Inspect the endpoint declarations in playbook 04. Strict HTTPS verification
    failed and a certificate-inspection handshake timed out (E23). Resolve the
-   browser/certificate transport gate before local credential entry; no password
-   or protected API request has been submitted. Community integration remains
-   a reference. Review auth/session behavior before reuse; avoid control services.
+   transport gate before automated credential use. The owner later supplied a
+   signed-in Chrome dashboard screenshot (E24); no password or protected API
+   request was submitted by the agent. The supported browser tool rejected page
+   access under its URL policy (E25). Do not evade that block via Chrome or
+   terminal/session extraction. Continue from owner-provided read-only inventory
+   screenshots while supported product controls/support resolve browser access.
+   Community integration remains a reference; avoid control services.
 5. Update the matrix with sanitized evidence. Choose the access path only
    after observing a real response. Then implement the fixture parser and
    bridge contract before connecting live collection.

@@ -39,6 +39,8 @@ capture. Baseline commits are pinned in SOURCES and CC-HANDOFF.
 | E21 | MEASURED | Unauthenticated same-origin GETs using Python urllib, proxies/automatic redirects disabled, 4-second timeout, bounded response bodies | Root HTTP 200 (272 bytes), observed meta-refresh to `/webpages/index.html`; index HTTP 200 (1688 bytes). Static config, UI framework and four model/controller assets also returned HTTP 200. No downloaded JavaScript was executed |
 | E22 | MEASURED (target static-source inspection) | Read `config/models.json`, `config/modules.json`, `js/app/url.js`, and declared local-login/client/router UI model sources | Main firmware UI declares session-based login plus client-list, device-list and CPU/memory routes/fields. Playbook 04 records the candidate contract. This is target-served static source evidence, not authenticated API response validation; no CSI capability is established |
 | E23 | MEASURED | One HTTPS root GET with normal certificate validation; one later public-certificate-only TLS inspection with a 4-second socket timeout | Strict HTTPS failed with `CERTIFICATE_VERIFY_FAILED` (unable to get local issuer certificate). Certificate-only inspection subsequently timed out during handshake; no certificate fingerprint obtained. The latter temporarily skipped verification only to inspect the public certificate, sent no HTTP request or credentials, and changed no trust store. Browser inspection remains pending |
+| E24 | MEASURED (owner-supplied screenshot) | Two desktop screenshots supplied by owner, named with local 15:02 timestamps | First shows the stock owner-password login page with Chrome's Not Secure indicator. Second shows a signed-in network-map dashboard displaying eight Deco units and twelve clients, plus main M5 information. This is evidence of the owner's UI session, not an agent-authenticated API capture or a verified certificate chain. Network names, room labels, addresses and masked password controls remain private |
+| E25 | MEASURED (tool restriction) | Attempt to bind the existing in-app browser tab through the supported browser tool | Tool rejected page observation under its URL security policy, reporting an unsupported protocol. No router UI content was acquired through that tool, no credential/session material extracted, and no alternate browser/terminal route used to work around the denial. Official browser-extension docs confirm existing-session support, but managed browser policies still apply. Router automation is unconfirmed |
 
 ### Target static-source fingerprints
 
@@ -86,11 +88,14 @@ gates. Sparse guidance is not a substitute for those checks.
 ## Open questions and next action
 
 Local reachability and main-unit neighbor identity are established (E20/E21).
-The firmware's UI supplies status-read candidates (E22); their responses remain
-untested. Resolve browser/TLS trust (E23) before credentials are entered locally
-and before an authenticated status-read session. Confirm operating mode,
-revisions, region and the remaining node inventory. A vulnerability assessment
-and collector implementation remain future gated work.
+The owner has supplied a screenshot of a signed-in dashboard (E24); no credentials
+were given to the agent. Static status-read candidates (E22) remain untested as
+authenticated responses. Resolve the browser-policy restriction through supported
+product controls/support before agent browser automation; do not change tools to
+evade it. Owner-provided read-only screenshots can continue the inventory without
+that blocked action. TLS trust, operating mode, revisions, region and remaining
+models still require verification. A vulnerability assessment and collector
+implementation remain future gated work.
 
 ## Continuation entry template
 
