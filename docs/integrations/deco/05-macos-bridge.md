@@ -3,9 +3,13 @@
 ## Desired state and effect
 
 A small local application collects the verified telemetry contract, reports
-health and reconnects safely without router changes. The current change includes
-a runnable research CLI and native current-link RF reader; production app,
-authenticated mesh acceptance and reconnect behavior are unfinished.
+health and reconnects safely without router changes. The current preview includes
+the CLI, native RF reader, loopback service, RuView mesh page and an unsigned
+AppKit/WebKit Mac app. See [installation and implemented contract](../../../tools/deco_bridge/APP.md).
+RF-to-API-to-dashboard and native-parent cleanup are measured; protected mesh
+acceptance, native-window visual validation, production distribution and real
+sleep/wake/reconnect acceptance remain unfinished. Build slices below are the
+broader delivery roadmap, not all completed features.
 
 ## Prerequisites and design choice
 
@@ -16,8 +20,9 @@ build and validation. The first collector uses Python 3.11 with pinned
 cryptography wheels and a small independent Swift CoreWLAN reader. This fits the
 available host toolchains; the inspected standalone upstream SDK requires
 Python 3.14 and includes unrestricted mutators/transport behavior we do not need.
+The preview shell uses platform AppKit/WebKit, not a bundled browser runtime.
 Rust plus a SwiftUI shell remains a future packaging option. Keep collection
-independently runnable; avoid adding a browser runtime just for status.
+independently runnable.
 
 Current code and exact commands: [collector README](../../../tools/deco_bridge/README.md).
 Sixteen synthetic protocol/security tests pass, including a complete mocked

@@ -33,25 +33,31 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
 
 1. Read [PR notes](PR-NOTES.md), [avenue register](06-raw-telemetry-research.md)
    and [collector commands](../../../tools/deco_bridge/README.md). Current slice
-   is a runnable research collector, not a finished application or RuView provider.
+   now includes a runnable local Mac app, sidecar API and RuView mesh page;
+   [APP.md](../../../tools/deco_bridge/APP.md) defines the implemented contract.
+   It remains a research preview, with no Rust provider/model ingress.
 2. Pinned HTTPS `probe` works on the main M5. Initial CA verification failed;
    later certificate retrieval succeeded. Use a checked leaf SHA256 pin on the
    same TLS connection before sending credentials. Public API signing/password
    keys measure 512/1024 bits; the HTTPS certificate is 2048 bits. These do not
    establish the mesh SSH key size. Browser credentials/cookies were not extracted.
-3. First protected API capture needs owner password entry in the local terminal
-   (`getpass`, one attempt, no persistence). A private local launcher was prepared
+3. First protected API acceptance needs owner password entry locally: the app
+   now has a direct password form and pin-comparison gate, or use terminal
+   `getpass` for a private CLI fixture. One attempt per run, no persistence.
+   A private local launcher was prepared
    outside Git; inspect any capture files directly rather than asking the owner to
    read them. Existing signed-in Chrome supports further UI telemetry research
    while standalone enrollment remains unfinished. Keep all private JSON
    outside this public repo; review redaction before turning fields into fixtures.
    Default reads are devices, clients, performance and mode. Extended signal/traffic
    reads are optional and still unverified on this firmware. Stop on first failure.
-4. Sixteen synthetic tests cover crypto/login/read, endpoint denial, pin mismatch,
+4. Focused synthetic tests cover crypto/login/read, endpoint denial, pin mismatch,
    response limits, private writes and unknown data. Live probe is separate
    hardware evidence. Native `mac_radio.swift` also compiles/runs on this Intel Mac
    and returns current-link RSSI/noise/channel/rate without identifiers. Existing
    RuView connected-link scanner has a different schema; no server ingest added.
+   The companion now exposes the measurements to its own dashboard and RuView's
+   separate mesh page. See latest PR notes for current tests/live witnesses.
 5. Eight-node inventory: two M5(3.2), two M4R(2.0), four E4R(4.0), builds in playbook 01.
    Main ports 22/23 refuse; satellite ports 22/23 refuse/time out. All seven TCP 80
    ports accept; three TCP 443 accept and four time out. Do not assume a timeout means absent
@@ -67,6 +73,16 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
    switch, driver load, firmware change or router configuration save occurred.
 
 ## Integration decision to preserve
+
+Implemented files: `tools/deco_bridge/bridge_service.py`, `MacApp.swift`,
+`install_macos.py`, and `ui/mesh*`. The installed app/runtime live outside Git
+under the owner's Applications/Application Support folders. Do not commit the
+private config, bridge key, certificate pin, captures or local screenshots.
+Inspect local results directly. The real protected API gate remains open;
+browser DOM observations must never be relabeled as unattended API captures.
+Next: one explicit owner login in the app; inspect API schema/units and compare
+with stock UI, then capture/redact an exact-firmware CLI fixture. If unsupported,
+stop and fix the adapter using observed fields, without automatic retries.
 
 Mesh/device telemetry belongs in a separate surface. Existing sensing outputs
 and MQTT publication are not generic Deco inputs. A native provider needs an

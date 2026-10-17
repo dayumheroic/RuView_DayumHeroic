@@ -5,10 +5,11 @@ M5/M4R/E4R mesh and a lightweight macOS bridge. No flashing,
 firmware upgrades/downgrades, factory resets, or router configuration changes.
 
 Includes a bounded [research collector](../../../tools/deco_bridge/README.md)
-and a native Mac RF reader. The collector's pinned HTTPS login handshake works
+and a native Mac RF reader. A local [Mac app, bridge API and RuView mesh page](../../../tools/deco_bridge/APP.md)
+now provide a working RF-to-dashboard path. The collector's pinned HTTPS login handshake works
 on the main M5; owner-authenticated telemetry capture remains pending. The Mac
 reader returns real current-link RSSI/noise/channel/rate. Neither establishes
-stock complex CSI or a completed RuView integration. Signed-in stock UI evidence
+stock complex CSI or completed protected-mesh acceptance. Signed-in stock UI evidence
 and the complete eight-node inventory are in playbook 01 and PR notes.
 
 | Playbook | Desired state and intended effect | Completion evidence |

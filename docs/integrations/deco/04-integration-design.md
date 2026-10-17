@@ -1,4 +1,25 @@
-# 04 — Integration design (proposed)
+# 04 — Integration design
+
+## Implemented preview (supersedes proposed routes and retry policy below)
+
+The separate sidecar contract now exists: authenticated `GET /v1/snapshot`,
+`POST /v1/deco/connect` and `POST /v1/deco/pause`, plus fixed static dashboard
+assets. Full wire, trust, lifecycle and installation details are in
+[APP.md](../../../tools/deco_bridge/APP.md). The snapshot separates Mac scalar RF
+from normalized mesh data. UI `mesh.html` is linked from RuView navigation and
+works without the sensing backend. No Rust vendor/provider registry or model
+ingress changed. No synthetic fallback exists in this live service/UI.
+
+The native app and RF-to-API-to-page path are built and locally witnessed.
+Protected Deco schema/units still need real owner-authenticated acceptance.
+Credentials stay in memory; no Keychain implementation or automatic auth retry.
+RF stale policy is 15 seconds; mesh is 90 seconds or a later failure. Poll mesh
+30 seconds after each successful batch. Retained stale records never populate
+current counts. Pausing drops mesh data and requires app restart to reconnect.
+
+The remaining sections preserve the original broader design proposal and
+historical research. Proposed fields, routes, Keychain and reconnect/backoff
+below are not claims about the narrower implemented preview.
 
 ## Desired state and effect
 

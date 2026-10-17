@@ -114,6 +114,49 @@ by sanitized field review and UI comparison. E44 demonstrates that normal signed
 browser observation can continue independently; inspect its outputs directly. No browser session
 extraction, applicable exploit or stock CSI stream is established.
 
+## Working bridge preview — 2026-10-16 local / 2026-10-17 UTC
+
+Continuation base: `81daab334db3f86a6094749461dc542111db4cd4`.
+Implementation commit is the PR head containing this entry; the PR continuation
+comment records its exact hash. Target remains the main M5 hardware 3.2,
+firmware 1.9.5 Build20260602 Rel.25369, and the current Intel macOS 26.6.2 host.
+The earlier “full application/consumer unfinished” statement above is superseded
+for the preview slice only; release and protected-mesh acceptance remain open.
+
+| ID | Label | Reproducer/source | Expected / actual / limit |
+|---|---|---|---|
+| E47 | MEASURED | Repeat pinned CLI `probe`; existing Chrome Clients DOM at2026-10-17T01:41:48.980Z | Handshake again returns512/1024-bit API RSA with no credential attempt. Browser again has10 rate-bearing rows with displayed KB/s. No identities exported; this remains browser evidence, not authenticated API payload validation |
+| E48 | SYNTHETIC + local HTTP tests | `tools/deco_bridge/.venv/bin/python -m unittest discover -s tools/deco_bridge -v`; `node --test tools/deco_bridge/test_mesh_client.mjs` |31 Python and6 Node tests pass. Added real loopback HTTP auth/Host/Origin/CORS, fixed assets/route rejection, bounded JSON, pin-confirmation gate, one auth attempt, fixed batch reads, pause, missing/empty, stale/error/clock/sleep transitions, schema/key privacy and client failure tests. Firmware responses remain synthetic. No real sleep experiment |
+| E49 | MEASURED installed service | `install_macos.py --host <main> --pin <private pin> --ruview-origin <explicit loopback UI>`; open native app; header-authenticated local `GET /v1/snapshot` | Swift app/helper compile; isolated pinned runtime installs; `pip check` passes. Installed assets byte-match source. HTTP200, CoreWLAN RSSI−48dBm/noise−89dBm/channel44, link rate866Mbps initially and780Mbps in a later sample. Mesh `disconnected`, phase `setup_required`, clients null, sign-in false. No protected hardware acceptance or throughput claim |
+| E50 | MEASURED RuView page | Serve actual `ui/mesh.html` on explicit loopback origin, connect through the page to a separate test service using a fixture bridge key and real CoreWLAN helper | Page displays live-unverified radio and unknown Deco counts. Cross-origin request succeeds under exact CORS; key input clears, setup hides. Stop test service: UI clears live values, shows disconnected and restores bridge setup. No console error/warn entries in inspected browser log. Screenshot saved privately outside Git. This is the real page, not a mock-data dashboard; native-window visual acceptance and Rust-hosted asset serving remain untested |
+| E51 | MEASURED lifetime and startup | Native launch, parent PID watch; terminate the native lifetime owner and check service port for up to3seconds | Service port closes within3seconds; restart succeeds. No login attempt was active. Initial test exposed HTTPServer reverse-DNS startup delay; overridden with literal-loopback TCP binding, focused tests then finish in2.826seconds. No OS resolver setting changed |
+
+Implemented: `tools/deco_bridge/bridge_service.py`, `MacApp.swift`,
+`install_macos.py`, focused tests and `APP.md`; `ui/mesh.html`, CSS, ES modules
+and the navigation link. The private app/config/runtime are outside Git.
+Host/Origin and per-install bearer auth protect the API; data are separated by
+capability and freshness. RF starts without credentials; Deco has a local
+password form plus explicit pin-comparison gate. The service makes only the
+four pre-existing allowlisted reads after login, with no auth retry, arbitrary
+endpoint, cloud export, firmware or configuration path. Pause cancels subsequent
+reads; an in-flight operation can finish. No raw captures are retained by the
+service, and no browser credential/session extraction was used.
+
+Remaining gates: first explicit owner-authenticated standalone read, schema and
+unit comparison, exact-firmware sanitized fixture, native-window visual test,
+real sleep/wake, long-run full-app resources including WebKit processes,
+fresh-profile removal/upgrade, arm64, signing/notarization and optional Keychain.
+One short process snapshot showed about49MiB native-host RSS and17MiB Python RSS;
+it excludes WebKit subprocesses and is not a steady-state budget pass.
+Core Rust sensing and archive pipelines are unchanged/not built; cargo and active
+CI remain unavailable. No raw stock CSI, exploit applicability or human-sensing
+capability is established. `improvements` stays unchanged.
+
+Validation and secret/link review for this continuation are recorded in the
+PR comment with the final commit. RF hardware/API/UI checks do not close the
+separate protected Deco gate. Next action is the app's local owner sign-in,
+then inspect results directly and adapt only to witnessed schema fields.
+
 ## Initial documentation-phase validation (historical)
 
 Performance continuation validation: four staged documents, twelve Markdown

@@ -2,8 +2,9 @@
 
 Small Python 3.11+ command-line companion for owner-authorized local discovery.
 It implements the stock Deco web protocol independently of a browser session.
-It produces private response evidence and a narrow `ruview.mesh.v0` JSON file;
-it does not yet connect to the RuView server or provide a signed macOS app.
+It now includes a loopback service, a RuView mesh page and an unsigned native
+Mac app, alongside private CLI capture. No Rust sensing ingress or
+signed/notarized distribution is added. See [Mac app setup and API](APP.md).
 
 **MEASURED:** the main M5 hardware 3.2 / firmware 1.9.5 Build 20260602
 Rel.25369 answers the pinned HTTPS `auth` and `keys` read forms, advertising
@@ -114,9 +115,10 @@ no identifiers, `complex_csi: false` and negative finite RSSI when available.
 
 Complete one owner-authenticated capture, compare counts/units with stock UI,
 review sanitized field names, and add exact-firmware fixtures before expanding
-the provider. A loopback server, RuView mesh UI, Keychain, persistent identity,
-startup handling, signing and resource measurements are separate unfinished
-slices. See [research playbooks](../../docs/integrations/deco/README.md).
+the provider. The loopback server, RuView mesh UI and local Mac wrapper now
+exist. Protected hardware acceptance, Keychain opt-in, persistent identity,
+reconnect/sleep-wake, signing and full resource measurements remain unfinished.
+See [research playbooks](../../docs/integrations/deco/README.md).
 
 Stop with Ctrl-C. Remove the private capture directory and `.venv` when no
 longer needed; no root service, launch agent, driver or router setting was added.
