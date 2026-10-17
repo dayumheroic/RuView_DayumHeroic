@@ -3,18 +3,30 @@
 ## Desired state and effect
 
 A small local application collects the verified telemetry contract, reports
-health and reconnects safely without router changes. No deployable application
-is included in this research change.
+health and reconnects safely without router changes. The current change includes
+a runnable research CLI and native current-link RF reader; production app,
+authenticated mesh acceptance and reconnect behavior are unfinished.
 
 ## Prerequisites and design choice
 
 Finish inventory, local-interface validation and contract review first. The
 measured development host is an Intel MacBook Pro with 16 GB RAM on macOS
 26.6.2. Ship/test x86_64 first on this host; arm64 support requires its own
-build and validation. Proposed implementation: Rust collector and a small
-SwiftUI menu-bar shell. Keep collection independently runnable so UI failure
-does not affect session recovery. Avoid adding a browser runtime just for status.
-Final language/dependency choice follows inspection of the proven auth protocol.
+build and validation. The first collector uses Python 3.11 with pinned
+cryptography wheels and a small independent Swift CoreWLAN reader. This fits the
+available host toolchains; the inspected standalone upstream SDK requires
+Python 3.14 and includes unrestricted mutators/transport behavior we do not need.
+Rust plus a SwiftUI shell remains a future packaging option. Keep collection
+independently runnable; avoid adding a browser runtime just for status.
+
+Current code and exact commands: [collector README](../../../tools/deco_bridge/README.md).
+Sixteen synthetic protocol/security tests pass, including a complete mocked
+firmware login/read. Live `probe` passes on the main M5 without credentials.
+The native RF reader compiled with Swift 6.3.3 and returned three current-link
+samples at one-second intervals on this Intel Mac. These are not CPU/RSS,
+sleep/wake, disconnected-state or end-to-end RuView acceptance measurements.
+An additional short five-sample run measured 4.04 s elapsed and 4,833,280-byte peak
+native process RSS (E42); this does not establish the 15-minute application budget.
 
 ## Build slices
 

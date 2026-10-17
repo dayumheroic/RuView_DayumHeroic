@@ -1,0 +1,4 @@
+# Binary wheels only; tested together on CPython 3.11 / Intel macOS.
+cryptography==48.0.1
+cffi==2.1.1
+pycparser==3.11

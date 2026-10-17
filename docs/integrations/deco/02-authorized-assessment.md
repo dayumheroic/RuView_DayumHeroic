@@ -16,8 +16,8 @@ neighbor network, client device or TP-Link cloud account as an implicit target.
 
 | Target alias | Address verified privately | Ownership/identity evidence | Technique/window | State |
 |---|---|---|---|---|
-| main-01 | Pending | App/label pending | Status-page read first | Not ready for service assessment |
-| satellite set | Pending | App/labels pending | Inventory first | Not ready |
+| main-01 | Verified privately | App, neighbor identity, signed-in inventory | Known management TCP connects, pinned HTTPS handshake | 80/443 reachable;22/23 refused; no credential attempt |
+| satellite set | Seven addresses identified in stock mesh logs | Eight-node signed-in inventory; per-address model mapping pending | One connect/port on22/23/80/443, concurrency 2, timeout 2 s | All80 open; three TCP 443 open/four timeout;22/23 refused or timeout |
 
 ## Actions
 
@@ -59,6 +59,11 @@ neighbor network, client device or TP-Link cloud account as an implicit target.
 | Disposition | Mitigation recommendation, retest and integration relevance |
 
 No vulnerability is confirmed in this session. No exploit tooling has run.
+Primary-source advisory dispositions and further avenues are maintained in
+[playbook06](06-raw-telemetry-research.md). Internal SSH events were visible in
+the stock log page; this is not proof of client access or vulnerability.
+Source review found that the page automatically builds a diagnostic log view.
+No explicit configuration save, log clear/export, reboot or firmware action ran.
 Do not publish sensitive exposure details in a public PR; use the repository's
 private security reporting path for actionable vulnerability details.
 

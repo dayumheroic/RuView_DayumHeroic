@@ -22,7 +22,8 @@ Both checkouts are sibling directories under the selected macOS workspace:
   `claude/focused-goodall-b5ot6r`, unchanged by this work.
 - Both are shallow sparse checkouts; unmaterialized files are not absent from
   the repository. Consult `git ls-tree` before drawing absence conclusions.
-  Submodules and dependencies were not installed.
+  Submodules and Rust workspace dependencies were not installed. The collector's
+  pinned Python wheels are installed only in its ignored `.venv`.
 
 Read current git status and root/scoped instructions before editing. RuView
 `AGENTS.md` and `CLAUDE.md` were read; improvements root README/CATALOG and
@@ -30,33 +31,38 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
 
 ## Findings and next actions
 
-1. Read [PR notes](PR-NOTES.md) and [playbooks](README.md). Read-only Chrome UI
-   access now works after the owner added the router origin to allowed sites
-   (E26). UI telemetry/inventory observations are measured; a standalone collector
-   contract and vulnerability findings remain unvalidated.
-2. E17 provides app-view evidence of the main address and two firmware builds.
-   E20 supersedes the routing problem in E18: the owner joined the Deco Wi-Fi,
-   the main address is on-link, and the gateway neighbor MAC matches the app.
-   HTTP root/index pages and static models are reachable (E21/E22). Signed-in
-   Status confirms the main WAN uses the former upstream subnet and LAN uses
-   the Deco subnet (E28). A dedicated operating-mode field remains uninspected.
-3. The live firmware table resolves all eight units: two M5(3.2), two M4R(2.0),
-   four E4R(4.0), with builds recorded in playbook 01 (E29). Confirm regions and
-   physical labels before matching regional advisories. Keep addresses, MACs,
-   account data and room names private.
-4. Inspect the endpoint declarations in playbook 04. Strict HTTPS verification
-   failed and a certificate-inspection handshake timed out (E23). Resolve the
-   transport gate before automated credential use. The owner later supplied a
-   signed-in Chrome dashboard screenshot (E24); no password or protected API
-   request was submitted by the agent. The supported browser tool rejected page
-   access under its URL policy (E25). The owner subsequently changed the origin's
-   permission through the supported app controls; Chrome read access then
-   succeeded (E26). This is a recorded permission-state change, not a bypass.
-   No custom API requests, credential/session extraction or full developer-mode
-   access were used. Community integration remains a reference; avoid controls.
-5. Update the matrix with sanitized evidence. Choose the access path only
-   after observing a real response. Then implement the fixture parser and
-   bridge contract before connecting live collection.
+1. Read [PR notes](PR-NOTES.md), [avenue register](06-raw-telemetry-research.md)
+   and [collector commands](../../../tools/deco_bridge/README.md). Current slice
+   is a runnable research collector, not a finished application or RuView provider.
+2. Pinned HTTPS `probe` works on the main M5. Initial CA verification failed;
+   later certificate retrieval succeeded. Use a checked leaf SHA256 pin on the
+   same TLS connection before sending credentials. Public API signing/password
+   keys measure 512/1024 bits; the HTTPS certificate is 2048 bits. These do not
+   establish the mesh SSH key size. Browser credentials/cookies were not extracted.
+3. First protected API capture needs owner password entry in the local terminal
+   (`getpass`, one attempt, no persistence). A private local launcher was prepared
+   outside Git; obtain the capture summary from the owner. Keep all private JSON
+   outside this public repo; review redaction before turning fields into fixtures.
+   Default reads are devices, clients, performance and mode. Extended signal/traffic
+   reads are optional and still unverified on this firmware. Stop on first failure.
+4. Sixteen synthetic tests cover crypto/login/read, endpoint denial, pin mismatch,
+   response limits, private writes and unknown data. Live probe is separate
+   hardware evidence. Native `mac_radio.swift` also compiles/runs on this Intel Mac
+   and returns current-link RSSI/noise/channel/rate without identifiers. Existing
+   RuView connected-link scanner has a different schema; no server ingest added.
+5. Eight-node inventory: two M5(3.2), two M4R(2.0), four E4R(4.0), builds in playbook 01.
+   Main ports 22/23 refuse; satellite ports 22/23 refuse/time out. All seven TCP 80
+   ports accept; three TCP 443 accept and four time out. Do not assume a timeout means absent
+   or map these transport groups to models without verified device-list records.
+6. Stock logs expose association/disassociation and internal root SSH events.
+   Important side effect: source inspection after viewing showed the page prepares
+   `feedback_log` with operation `build` automatically. No explicit Save/Clear or
+   config control was used. These callbacks are excluded from the strict collector.
+7. Prioritize matching stock internal telemetry callbacks and the BFI capture path
+   after the normal API fixture. Reviewed advisories do not establish an applicable
+   exploit on this inventory. CSI-Bench's IPQ4019 support depends on vendor-enabled
+   drivers/utilities; no stock-M5 CSI conclusion follows. No exploit, monitor-mode
+   switch, driver load, firmware change or router configuration save occurred.
 
 ## Integration decision to preserve
 

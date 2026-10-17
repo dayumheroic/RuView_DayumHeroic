@@ -51,6 +51,18 @@ review, not a full dependency or supply-chain audit.
 
 ## Completion and recovery
 
+Additional protocol review selected an independent minimal collector rather
+than a whole management SDK. `roquerodrigo/tplink-deco-api` at
+`dabd77fbc9bd4d5209a78beb7752b4308b2e647a` (MIT, Python 3.14+) and
+`amosyuen/ha-tplink-deco` at `cfb2a2ac864e43671c3b1c17f6866f5c737d2acc`
+(MIT) were cloned outside Git workspaces and inspected, not installed/executed.
+Both expose mutating controls; the standalone SDK disables TLS certificate
+verification by default and can log session-bearing URLs. Our collector instead
+uses a same-socket leaf pin, fixed read forms and constant error messages.
+Protocol attribution is included with the collector. cryptography 48.0.1,
+cffi 2.1.1 and pycparser 3.11 wheels were installed in an isolated ignored venv.
+The Mac RF reader uses Apple CoreWLAN directly. No `improvements` asset changed.
+
 Gate: each selected tool has a pin, license decision, reviewed entry point,
 bounded execution plan and data/cleanup policy. Current discovery selects no
 vendored executable. Stop a tool that exceeds scope; retain sanitized evidence

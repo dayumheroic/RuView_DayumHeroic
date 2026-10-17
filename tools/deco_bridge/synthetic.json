@@ -1,0 +1,8 @@
+{
+  "evidence": "SYNTHETIC: invented contract example; never captured from hardware",
+  "observed_at": "2026-01-01T00:00:00+00:00",
+  "responses": {
+    "devices": {"device_list": [{"mac": "02:00:00:00:00:01", "online": true, "signal_level": {"band2_4": 2, "band5": 3}}]},
+    "clients": {"client_list": [{"mac": "02:00:00:00:00:02", "down_speed": 12, "up_speed": 4}]}
+  }
+}

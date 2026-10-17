@@ -1,11 +1,12 @@
-# PR notes — stock Deco research and macOS bridge plan
+# PR notes — stock Deco research and macOS collectors
 
 ## Change
 
 The project needs a verified way to collect stock Deco telemetry before building
-a Mac bridge. This change adds five gated playbooks, source references and a
-CC handoff. It proposes a separate mesh telemetry surface with explicit
-freshness and capability limits. It adds no runtime code or hardware changes.
+a Mac bridge. This change adds six gated playbooks, source references, a CC
+handoff, a bounded Python research collector and a native Swift current-link RF
+reader. It proposes a separate mesh telemetry surface with explicit freshness
+and capability limits. No router configuration or firmware changes were made.
 
 Research session: 2026-10-16. Local discovery timestamp witness:
 `2026-10-16T18:27:23Z` (13:27:23 America/Bogota), with routing rechecked later
@@ -71,7 +72,40 @@ service assessment, exploit, firmware operation or live RuView build has been
 performed. The owner's browser session supplied authentication without sharing
 credentials with the agent.
 
-## Validation status
+## Further research and implementation evidence
+
+Continuation on 2026-10-16 local (native sample witness at
+2026-10-17T00:11:49Z–00:11:51Z). Commands use private target/pin aliases;
+actual addresses, certificate and source/log captures remain outside Git.
+
+| ID | Label | Reproducer/source | Observed result and practical limit |
+|---|---|---|---|
+| E30 | MEASURED | Public leaf-certificate retrieval, 8 s timeout; DER SHA256 and public certificate fields | Retrieval succeeded, superseding earlier timeout. Self-signed local Deco hostname; RSA2048. Pin recorded privately. Initial pin needs comparison with owner's trusted browser; not public-CA verification |
+| E31 | MEASURED | Main TCP 22/23, one connect/port, timeout 2 s | Both refused from client LAN; no login/shell attempt. Does not rule out internal/backhaul access |
+| E32 | MEASURED source inspection | Pinned SDK and HA sources, playbook 03 | Protocol agrees across implementations. SDK Python 3.14 minimum, mutators, trust-all TLS and session-URL logging make whole-package reuse unsuitable. Neither upstream package executed |
+| E33 | CLAIMED with source review | Vendor/JVN advisories, CCS2024 paper, signature-bypass research; dispositions in playbook 06 | No exact applicable exploit confirmed. M5v1, historical M4 JP range and newer XE models do not establish owner exposure. Firmware-upload methods excluded |
+| E34 | MEASURED | Seven stock-log-identified satellite addresses × TCP 22/23/80/443; concurrency 2, timeout 2 s, 28 connections | Seven TCP 80 open; three TCP 443 open/four timeout;22/23 refuse or time out. No auth, payload or UDP sweep. Private per-address results retained; per-address model mapping unverified |
+| E35 | MEASURED UI and source | Advanced→System→System Log; sanitized visible-text checks; public sysLog model/controller | Association/disassociation, DHCP and internal root SSH events visible; no CSI mention in inspected page. Source revealed automatic feedback_log build on launch/filter. No explicit Save/Clear/export or setting action; callbacks excluded from collector |
+| E36 | MEASURED offline artifact | Official E4(US)v4 1.1.2 Build20250226 Rel.35508 ZIP; zip/hash/magic/string inspection | Image: 3,150,228 bytes, clear MT7628/MT7663 strings. No ELF/SquashFS/UBI header found by bounded scan; filesystem not extracted. Region match unverified. Hashes in SOURCES; no binary execution or image modification |
+| E37 | SYNTHETIC tests + MEASURED probe | `python -m unittest discover -s tools/deco_bridge -v`; `probe --host <main> --pin <private pin>` | 16 tests pass: full synthetic firmware login/read, crypto, endpoint denial, pin rejection, response limits, private output and unknown fields. Live probe reports 512-/1024-bit API RSA without credential attempt. Protected telemetry unvalidated |
+| E38 | MEASURED | `swiftc tools/deco_bridge/mac_radio.swift`; native 3-sample run, CLI boundary/schema checks | Swift 6.3.3 Intel build passes. Current-link RSSI/noise/channel/rate returned at 1 s polling. Seven invalid-argument cases exit 2 without stdout; two more live samples pass schema/no-identifier checks. No scan/monitor switch/location prompt; no independent radio cadence claim |
+| E39 | MEASURED source inspection / CLAIMED external capability | RuView BFI and mac_wifi/scanner sources; OpenWrt definitions; CSI-Bench §3.3 | BFI capture untested on Deco and not full CSI. Existing Mac scanner has different schema. M5 chip family has vendor-enabled CSI precedent, not verified retail export |
+| E40 | MEASURED | Isolated binary-wheel installation; `pip check`; synthetic replay; private launcher `zsh -n` | cryptography 48.0.1/cffi 2.1.1/pycparser 3.11 install/check pass; 16 tests pass in venv. Replay marked synthetic. Indexed 50.0.2 could not be installed from configured registry; available 48.0.1 tested, no latest claim. Launcher syntax passes; protected execution pending |
+| E41 | MEASURED offline artifact | Official M5v3.20 support page,1.9.5 Build20260602 Rel.25369 multi-model package; zip/hash/magic inspection | Image: 17,107,872 bytes; package names SP4/RSA2048. No fwup-ptn/UBI/SquashFS/ELF marker found; packaged filesystem remains opaque, not audited. Build matches UI; owner region remains unknown. No binary executed, decrypted, modified or installed |
+| E42 | MEASURED | `/usr/bin/time -l mac-radio --samples 5 --interval 1`; pinned handshake followed by local public-key-only encryption of a synthetic string | Five available native samples, 4.04 s elapsed, 0.01 s user/0.00 s system, 4,833,280-byte peak process RSS. Short run excludes service/daemon accounting and 15-minute steady-state acceptance. Legacy 512-bit public-key encryption succeeds (64-byte ciphertext), no protected request or credential attempt |
+| E43 | MEASURED structural/privacy review | Full staged-file scan, Markdown local-link/fence check, `git diff --cached --check`, manual review |16 staged text files,11 Markdown documents,18 local links; zero broken links/fences, private-marker matches, runtime artifacts or whitespace errors. Venv/cache ignored. This is a bounded marker check plus manual review, not a comprehensive secret scanner |
+
+Current validation: E37/E38/E40/E42/E43 are terminal passes. Full staged review
+covers whitespace, document links, unsupported claims and private identifiers.
+No private captures, binaries, venv or session state belong in this PR.
+Rust workspace/archive pipeline are unchanged and were not built; cargo is not
+installed. No active CI exists at the baseline. Authenticated mesh acceptance,
+resource budgets, sleep/wake and the complete application remain unfinished.
+The immediate gate is one owner-authenticated local-terminal capture, followed
+by sanitized field review and comparison with the stock UI. No browser session
+extraction, applicable exploit or stock CSI stream is established.
+
+## Initial documentation-phase validation (historical)
 
 Documentation validation: PASS. A Python 3 standard-library check inspected all
 nine documents and ten local Markdown links, verified pinned RuView source
@@ -93,7 +127,7 @@ change and have not been run. Future parser/provider
 code requires the focused checks in playbooks 04/05 plus the relevant repository
 gates. Sparse guidance is not a substitute for those checks.
 
-## Open questions and next action
+## Original UI-phase open questions (superseded by E30–E40)
 
 Local reachability, main identity, stock UI status/client fields and all eight
 model/revision/firmware tuples are established (E20–E29). The owner resolved the

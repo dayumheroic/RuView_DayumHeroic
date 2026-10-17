@@ -1,18 +1,15 @@
 # Stock Deco → RuView research
 
 Research date: 2026-10-16 (America/Bogota). Scope: the owner's stock Deco
-M5/M4R mesh, possible E4 nodes, and a lightweight macOS bridge. No flashing,
+M5/M4R/E4R mesh and a lightweight macOS bridge. No flashing,
 firmware upgrades/downgrades, factory resets, or router configuration changes.
 
-This is a research and implementation plan, not a working collector or a claim
-of hardware compatibility. App screenshots identify the main M5 firmware and
-one M4R firmware. After joining the Deco Wi-Fi, the Mac reached the main unit's
-stock web UI and its local neighbor identity matched the app screenshot.
-After the owner explicitly allowed the router origin in Chrome permissions,
-agent read-only browser access succeeded. The signed-in UI exposed client rates,
-connection types, network status and the complete model/revision/firmware table.
-Standalone collector response contracts and HTTPS trust remain unverified.
-See E20–E29 in PR notes; the measured inventory is in playbook 01.
+Includes a bounded [research collector](../../../tools/deco_bridge/README.md)
+and a native Mac RF reader. The collector's pinned HTTPS login handshake works
+on the main M5; owner-authenticated telemetry capture remains pending. The Mac
+reader returns real current-link RSSI/noise/channel/rate. Neither establishes
+stock complex CSI or a completed RuView integration. Signed-in stock UI evidence
+and the complete eight-node inventory are in playbook 01 and PR notes.
 
 | Playbook | Desired state and intended effect | Completion evidence |
 |---|---|---|
@@ -21,6 +18,7 @@ See E20–E29 in PR notes; the measured inventory is in playbook 01.
 | [03 Tooling review](03-tooling-review.md) | Select relevant, auditable tools from `improvements` | Pinned manifests, license review, execution/side-effect decision |
 | [04 Integration design](04-integration-design.md) | Select an observed telemetry path and preserve provenance | Contract, fixture replay and reviewed interface decision |
 | [05 macOS bridge](05-macos-bridge.md) | Deliver a small local collector with reliable diagnostics | Offline tests, live exact-firmware acceptance, installation and removal checks |
+| [06 Raw telemetry avenues](06-raw-telemetry-research.md) | Investigate APIs, logs, security findings, firmware, BFI and native RF access | Per-avenue evidence, exclusions and falsifiable next gate |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and
