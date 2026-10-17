@@ -9,6 +9,7 @@ export const INPUT_MAP = Object.freeze([
   ['classification.presence / persons', 'Unvalidated', 'Link change is not a person or an occupancy count.'],
   ['pose_keypoints / vital_signs', 'Unavailable', 'Requires suitable observations and validated inference.'],
   ['mesh / ICMP', 'Separate telemetry', 'Node/client records and network RTT retain their own timestamps and units.'],
+  ['Device → Deco attachment', 'Node-filtered observations', 'Last-observed membership, confidence conflicts and observation times; not a precise person location.'],
 ]);
 const finite = x => typeof x === 'number' && Number.isFinite(x);
 const median = xs => {const a=[...xs].sort((a,b)=>a-b);return a.length?(a[(a.length-1)>>1]+a[a.length>>1])/2:null;};

@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "deco_bridge"))
 from research_feed import private_config
 
 
-def check(config_path):
+def check(config_path, require_associations=False):
     cfg = private_config(config_path)
     u = urlsplit(cfg["origin"])
     if u.scheme != "https" or not (u.hostname or "").endswith(".workers.dev") or u.port or u.path or u.query or u.fragment:
@@ -43,7 +43,7 @@ def check(config_path):
     assert request("GET", "/")[0] == 303
     assert request("GET", "/health")[0] == 200
     assert request("GET", "/ruview/")[0] == 303
-    for path in ("/ruview/app.js", "/ruview/style.css", "/api/ruview/snapshot"):
+    for path in ("/ruview/app.js", "/ruview/style.css", "/api/ruview/snapshot", "/association-ui.js"):
         assert request("GET", path)[0] == 401
     assert request("POST", "/api/ingest", "{}", {"Content-Type": "application/json"})[0] == 401
     assert request("POST", "/api/login", json.dumps({"token": "0" * 64}),
@@ -56,6 +56,14 @@ def check(config_path):
     status, raw, _ = request("GET", "/api/snapshot", headers=session)
     assert status == 200
     value = json.loads(raw)
+    assert request("GET", "/association-ui.js", headers=session)[0] == 200
+    association = value["latest"]["mesh"].get("associations")
+    groups = association.get("node_observations", []) if association else []
+    records = association.get("clients", []) if association else []
+    if require_associations:
+        assert association and association["state"] != "stopped"
+        assert len(groups) == len(value["latest"]["mesh"]["nodes"]) > 0
+        assert any(c["state"] == "last_observed" for c in records)
     assert request("GET", "/ruview/", headers=session)[0] == 200
     assert request("GET", "/ruview/style.css", headers=session)[0] == 200
     mapped_status, mapped_raw, _ = request("GET", "/api/ruview/snapshot", headers=session)
@@ -123,6 +131,8 @@ def check(config_path):
             s.sendall(bytes((0x88, 0x82)) + mask + bytes(x ^ mask[i % 4] for i, x in enumerate(b"\x03\xe8")))
     latest = second["latest"]
     summary = {"label": "MEASURED", "private_ruview_ui": True, "mapped_sensing": mapped["source_state"],
+               "association_nodes_observed": len(groups), "clients_attributed": sum(c["state"] == "last_observed" for c in records),
+               "association_hardware_required": require_associations,
                "link_change_state": mapped["change"]["state"], "distinct_rf_samples": mapped["scalar"]["sample_count"],
                "anonymous_denial": True, "cross_origin_denial": True,
                "private_cookie": True, "publisher_viewer_isolation": True, "live_websocket_updates": True,
@@ -138,5 +148,6 @@ def check(config_path):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", required=True)
+    p.add_argument("--require-associations", action="store_true", help="Require a complete real node-filter sweep and at least one attributed client")
     args = p.parse_args()
-    check(args.config)
+    check(args.config, args.require_associations)

@@ -34,6 +34,7 @@ the native Rust tracking backend remains undeployed. See
 | [08 Device metadata and feedback](08-device-metadata-and-feedback.md) | Investigate owned clients, packet metadata and beamforming feedback without flashing | Measured node/client signal-field coverage, read-only capture preflight and controlled-trial gates |
 | [09 Live link experiments](09-live-link-experiments.md) | Test dBm, link variation and network timing without inventing tracks | Unit vectors and live measurements; controlled motion acceptance remains open |
 | [10 RuView UI bridge mode](10-ruview-ui-bridge-mode.md) | Reuse the original interface and map expected inputs to the live bridge | Deployed private UI, live scalar picture and explicit unknown tracking fields |
+| [11 Device-to-node attachments](11-device-node-associations.md) | Show node-filtered membership, ages and observed attachment changes | Implemented/deployed; protected filtered-read acceptance pending local sign-in |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and

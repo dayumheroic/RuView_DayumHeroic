@@ -66,6 +66,32 @@ def ordinal_to_dbm(_value):
     return None  # No validated calibration; a many-to-one quality label has no unique inverse.
 
 
+def association_export(value):
+    if not isinstance(value, dict):
+        return None
+    if value.get("source") != "deco_node_filtered_client_list" or value.get("state") not in ("collecting", "stopped") or value.get("failure_reason") not in (None, "inventory_schema", "filtered_read_failed"):
+        raise ValueError("Unsupported association source")
+    def identity(x):
+        if not isinstance(x, str) or not re.fullmatch(r"[a-f0-9]{24}", x):
+            raise ValueError("Invalid association alias")
+        return x
+    def stamp(x):
+        if not isinstance(x, str) or len(x) > 40:
+            raise ValueError("Invalid association timestamp")
+        datetime.fromisoformat(x.replace("Z", "+00:00"))
+        return x
+    return {"source": value.get("source"), "observed_at": stamp(value.get("observed_at")),
+            "state": value.get("state"), "failure_reason": value.get("failure_reason"),
+            "node_observations": [{"node_id": identity(x.get("node_id")), "observed_at": stamp(x.get("observed_at")),
+                                   "client_count": len(x.get("client_ids", []))} for x in value.get("node_observations", [])[:32]],
+            "clients": [{"client_id": identity(x.get("client_id")), "node_id": identity(x["node_id"]) if x.get("node_id") is not None else None, "observed_at": stamp(x["observed_at"]) if x.get("observed_at") is not None else None,
+                         "state": x.get("state") if x.get("state") in ("last_observed", "ambiguous", "unknown") else "unknown", "candidate_node_ids": [identity(n) for n in x.get("candidate_node_ids", [])[:4]],
+                         "candidate_count": len(x.get("candidate_node_ids", []))} for x in value.get("clients", [])[:128]],
+            "events": [{"client_id": identity(x.get("client_id")), "from_node_id": identity(x.get("from_node_id")), "to_node_id": identity(x.get("to_node_id")),
+                        "previous_observed_at": stamp(x.get("previous_observed_at")), "observed_at": stamp(x.get("observed_at")), "kind": "observed_attachment_change"}
+                       for x in value.get("events", [])[-32:]]}
+
+
 def projection(value, collection, sequence, probes):
     if value.get("schema") != "ruview.bridge.v0" or value.get("capabilities") != CAPABILITIES:
         raise ValueError("Unsupported bridge source")
@@ -95,13 +121,17 @@ def projection(value, collection, sequence, probes):
             signal = item.get("signal") or {}
             rates = item.get("rates") or {}
             result.append({"id": item["id"], "online": item.get("online") if type(item.get("online")) is bool else None,
+                           "parent_id": item.get("parent_id") if isinstance(item.get("parent_id"), str) and re.fullmatch(r"[a-f0-9]{24}", item["parent_id"]) else None,
+                           "is_main": item.get("is_main") if type(item.get("is_main")) is bool else None,
+                           "model": item.get("model") if item.get("model") in ("M5", "M4R", "M4", "E4R", "E4") else None,
                            "signal_2g": numeric(signal.get("band2_4"), 0, 100), "signal_5g": numeric(signal.get("band5"), 0, 100),
                            "down_raw": numeric(rates.get("down_raw"), 0, 1e12), "up_raw": numeric(rates.get("up_raw"), 0, 1e12)})
         return result
 
     return {"schema": "ruview.observatory.v1", "collection": collection, "sequence": sequence, "sent_at": now(),
             "radio": radio, "mesh": {"source_state": m["source_state"], "observed_at": m.get("observed_at"),
-                                      "nodes": rows(m.get("nodes"), 32), "clients": rows(m.get("clients"), 128)},
+                                      "nodes": rows(m.get("nodes"), 32), "clients": rows(m.get("clients"), 128),
+                                      "associations": association_export(m.get("associations"))},
             "connection": value.get("connection"), "probes": probes, "capabilities": CAPABILITIES}
 
 
@@ -183,7 +213,7 @@ def publish(url, token, frame, local=False):
     if not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{64}", token):
         raise ValueError("Invalid publisher credential")
     body = json.dumps(frame, separators=(",", ":"), allow_nan=False).encode()
-    if len(body) > 32768:
+    if len(body) > 65536:
         raise ValueError("Export exceeded size bound")
     try:
         c.request("POST", "/api/ingest", body, {"Authorization": "Bearer " + token, "Content-Type": "application/json"})

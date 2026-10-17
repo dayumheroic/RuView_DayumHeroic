@@ -54,7 +54,11 @@ def checked(value):
         raise BridgeError("Malformed response object")
     for key in ("error_code", "errorcode"):
         if key in value and value[key] != 0:
-            raise BridgeError("Router rejected request; stopped without automatic retry")
+            error = BridgeError("Router rejected request; stopped without automatic retry")
+            # Numeric firmware status only, never arbitrary upstream text.
+            code = value[key]
+            error.router_code = code if type(code) is int and -100000 <= code <= 100000 else None
+            raise error
     return value
 
 
@@ -214,6 +218,19 @@ class Session:
         if not self.token:
             raise BridgeError("Authentication required")
         path, form, params = READS[name]
+        return self._fixed_read(path, form, params)
+
+    def read_node_clients(self, mac, known_nodes):
+        # Match the stock UI's node filter, restricted to the current inventory.
+        if canonical_mac(mac) is None or not isinstance(known_nodes, (list, tuple)) or len(known_nodes) > 32:
+            raise BridgeError("Invalid node client filter")
+        if canonical_mac(mac) not in {canonical_mac(x) for x in known_nodes}:
+            raise BridgeError("Node is outside the current mesh inventory")
+        if not self.token:
+            raise BridgeError("Authentication required")
+        return self._fixed_read("admin/client", "client_list", {"device_mac": mac})
+
+    def _fixed_read(self, path, form, params):
         payload = {"operation": "read"}
         if params:
             payload["params"] = params.copy()
@@ -233,17 +250,136 @@ def number(value):
     return value if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
 
 
+def canonical_mac(mac):
+    if not isinstance(mac, str):
+        return None
+    value = re.sub(r"[:-]", "", mac).lower()
+    return value if re.fullmatch(r"[a-f0-9]{12}", value) else None
+
+
+def identity_alias(mac, salt):
+    value = canonical_mac(mac)
+    return hmac.new(salt, value.encode(), hashlib.sha256).hexdigest()[:24] if value else None
+
+
+class AssociationTracker:
+    """Two fixed node-filter reads per mesh batch; one serialized session."""
+    def __init__(self):
+        self.groups, self.previous, self.events = {}, {}, []
+        self.cursor = 0
+        self.disabled = False
+        self.failure = None
+        self.diagnostic = None
+        self.transient_retry_used = False
+        self.schema_witnesses = {}
+
+    def collect(self, session, capture, salt, stop=None):
+        nodes = capture.get("responses", {}).get("devices", {}).get("device_list", [])
+        if not isinstance(nodes, list) or len(nodes) > 32:
+            self.disabled, self.failure = True, "inventory_schema"
+            return
+        macs = [n.get("mac") for n in nodes if isinstance(n, dict) and canonical_mac(n.get("mac"))]
+        if len(macs) != len(nodes) or len(set(map(canonical_mac, macs))) != len(macs):
+            self.disabled, self.failure = True, "inventory_schema"
+            return
+        valid = {identity_alias(mac, salt) for mac in macs}
+        self.schema_witnesses = {k: v for k, v in self.schema_witnesses.items() if k in valid}
+        self.groups = {k: v for k, v in self.groups.items() if k in valid}
+        self.previous = {k: v for k, v in self.previous.items() if v["node_id"] in valid}
+        self.events = [e for e in self.events if e["from_node_id"] in valid and e["to_node_id"] in valid]
+        if self.disabled or not macs:
+            return
+        for _ in range(min(2, len(macs))):
+            if stop is not None and stop.is_set():
+                return
+            mac = macs[self.cursor % len(macs)]
+            self.cursor += 1
+            self.diagnostic = None
+            try:
+                result = session.read_node_clients(mac, macs)
+                clients = result.get("client_list") if isinstance(result, dict) else None
+                def kind(value):
+                    return "null" if value is None else "array" if isinstance(value, list) else "object" if isinstance(value, dict) else "other"
+                key = identity_alias(mac, salt)
+                self.schema_witnesses[key] = {"result_type": kind(result),
+                    "client_list_present": isinstance(result, dict) and "client_list" in result,
+                    "client_list_type": kind(clients), "entries": len(clients) if isinstance(clients, (list, dict)) else None}
+                # Some JSON encoders represent an empty table as {}. It has no
+                # client entries; never coerce a populated object, null or a
+                # missing field into an empty observation.
+                if isinstance(clients, dict) and not clients:
+                    clients = []
+                if not isinstance(clients, list) or len(clients) > 128 or any(not isinstance(c, dict) or identity_alias(c.get("mac"), salt) is None for c in clients):
+                    self.diagnostic = {"category": "filtered_schema", "result_is_object": isinstance(result, dict),
+                                       "client_list_is_array": isinstance(clients, list)}
+                    raise BridgeError("Unsupported filtered client schema")
+                ids = [identity_alias(c["mac"], salt) for c in clients]
+                if len(ids) != len(set(ids)):
+                    raise BridgeError("Unsupported filtered client schema")
+                self.groups[key] = {"node_id": key, "observed_at": datetime.now(timezone.utc).isoformat(), "client_ids": ids}
+                self.failure, self.diagnostic = None, None
+            except (BridgeError, OSError) as error:
+                categories = {"Network request timed out": "network_timeout", "TLS negotiation or record failure": "tls_failed",
+                              "Router response was not valid JSON": "response_decode", "HTTP protocol or connection failure": "http_protocol",
+                              "Network connection failed": "network_failed", "Malformed encrypted response": "encrypted_response",
+                              "Router rejected request; stopped without automatic retry": "router_rejected",
+                              "Certificate pin mismatch; no HTTP request sent": "certificate_pin_mismatch",
+                              "Unsupported filtered client schema": "filtered_schema"}
+                category = categories.get(str(error), "filtered_read_failed") if isinstance(error, BridgeError) else "network_failed"
+                if self.diagnostic is None:
+                    self.diagnostic = {"category": category}
+                code = getattr(error, "router_code", None)
+                if type(code) is int and -100000 <= code <= 100000:
+                    self.diagnostic["router_code"] = code
+                # One delayed retry of a classified transient status-read failure,
+                # on the same session and same node, in the next normal cycle.
+                if category in {"network_timeout", "tls_failed", "response_decode", "http_protocol", "network_failed"} and not self.transient_retry_used:
+                    self.transient_retry_used = True
+                    self.cursor -= 1
+                    self.failure = "filtered_read_failed"
+                    return
+                self.disabled, self.failure = True, "filtered_read_failed"
+                return  # No further optional reads or re-login; core telemetry continues.
+
+    def view(self, clients, observed_at, now=None):
+        now = time.time() if now is None else now
+        recent = [g for g in self.groups.values() if 0 <= now - datetime.fromisoformat(g["observed_at"]).timestamp() <= 300]
+        records = []
+        for client in clients or []:
+            claims = sorted([g for g in recent if client["id"] in g["client_ids"]], key=lambda g: g["observed_at"], reverse=True)
+            only = claims[0] if len(claims) == 1 else None
+            record = {"client_id": client["id"], "node_id": only["node_id"] if only else None,
+                      "observed_at": only["observed_at"] if only else None,
+                      "state": "ambiguous" if len(claims) > 1 else "last_observed" if only else "unknown",
+                      "candidate_node_ids": [g["node_id"] for g in claims]}
+            records.append(record)
+            if only:
+                old = self.previous.get(client["id"])
+                if old and old["node_id"] != only["node_id"] and only["observed_at"] > old["observed_at"]:
+                    self.events.append({"client_id": client["id"], "from_node_id": old["node_id"], "to_node_id": only["node_id"],
+                                        "previous_observed_at": old["observed_at"], "observed_at": only["observed_at"], "kind": "observed_attachment_change"})
+                if old is None or only["observed_at"] >= old["observed_at"]:
+                    self.previous[client["id"]] = {"node_id": only["node_id"], "observed_at": only["observed_at"]}
+        current_ids = {c["id"] for c in clients or []}
+        self.previous = {k: v for k, v in self.previous.items() if k in current_ids and now - datetime.fromisoformat(v["observed_at"]).timestamp() <= 300}
+        self.events = [e for e in self.events if now - datetime.fromisoformat(e["observed_at"]).timestamp() <= 900][-64:]
+        return {"source": "deco_node_filtered_client_list", "observed_at": observed_at,
+                "state": "stopped" if self.disabled else "collecting", "failure_reason": self.failure,
+                "local_diagnostic": self.diagnostic,
+                "local_schema_witnesses": self.schema_witnesses.copy(),
+                "node_observations": recent, "clients": records, "events": self.events.copy()}
+
+
 def normalize(capture, salt, synthetic=False):
     """A deliberately narrow public contract. Unknown/missing is never absent."""
     if not isinstance(capture, dict) or not isinstance(capture.get("responses"), dict):
         raise BridgeError("Malformed capture")
     def alias(mac):
-        if not isinstance(mac, str):
-            return None
-        canonical = re.sub(r"[:-]", "", mac).lower()
-        if not re.fullmatch(r"[a-f0-9]{12}", canonical):
-            return None
-        return hmac.new(salt, canonical.encode(), hashlib.sha256).hexdigest()[:24]
+        return identity_alias(mac, salt)
+
+    device_rows = capture["responses"].get("devices", {})
+    device_rows = device_rows.get("device_list", []) if isinstance(device_rows, dict) else []
+    known_ids = {alias(row.get("mac")) for row in device_rows if isinstance(row, dict)} if isinstance(device_rows, list) else set()
 
     def rows(endpoint, field):
         result = capture.get("responses", {}).get(endpoint)
@@ -256,13 +392,17 @@ def normalize(capture, salt, synthetic=False):
             if identity is None:
                 return None  # malformed list is incomplete, not an empty mesh
             signal = row.get("signal_level")
+            parent = alias(row.get("previous")) if endpoint == "devices" and row.get("role") != "master" else None
             output.append({"id": identity,
                            "online": row.get("online") if type(row.get("online")) is bool else None,
                            "rates": {"down_raw": number(row.get("down_speed")),
                                      "up_raw": number(row.get("up_speed")), "unit": "unverified"},
                            "signal": {"band2_4": number(signal.get("band2_4")),
                                       "band5": number(signal.get("band5")), "scale": "unknown"}
-                           if isinstance(signal, dict) else None})
+                           if isinstance(signal, dict) else None,
+                           "parent_id": parent if parent in known_ids and parent != identity else None,
+                           "is_main": row.get("role") == "master" if row.get("role") in ("master", "slave") else None,
+                           "model": row.get("device_model") if row.get("device_model") in ("M5", "M4R", "M4", "E4R", "E4") else None})
         return output
 
     return {"schema": "ruview.mesh.v0", "source": "deco_local",

@@ -19,7 +19,7 @@ import time
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
-from deco_bridge import BridgeError, Session, Transport, compact, normalize
+from deco_bridge import AssociationTracker, BridgeError, Session, Transport, compact, normalize
 
 CAPABILITIES = {"complex_csi": False, "human_presence": False, "vitals": False, "pose": False}
 # Exact collector-owned messages map to fixed categories. Unknown upstream text
@@ -167,6 +167,7 @@ class State:
 
     def mesh_loop(self, password):
         session = None
+        associations = AssociationTracker() if self.config.get("associations_enabled") is True else None
         stage = "authentication"
         try:
             session = self.factory()
@@ -209,11 +210,18 @@ class State:
                 # Missing lists must not count as a successful hardware schema validation.
                 if value["nodes"] is None or value["clients"] is None:
                     raise BridgeError("Unsupported protected response schema")
+                if associations is not None:
+                    value["associations"] = associations.view(value["clients"], value["observed_at"])
                 with self.lock:
                     if self.mesh_stop.is_set() or self.stop.is_set():
                         return
                     self.mesh, self.mesh_time, self.phase = value, time.monotonic(), "connected"
                     self.mesh_wall = time.time()
+                if associations is not None:
+                    associations.collect(session, capture, self.salt, self.mesh_stop)
+                    with self.lock:
+                        if not self.mesh_stop.is_set() and not self.stop.is_set():
+                            value["associations"] = associations.view(value["clients"], value["observed_at"])
                 if self.mesh_stop.wait(30):
                     return
         except Exception as error:

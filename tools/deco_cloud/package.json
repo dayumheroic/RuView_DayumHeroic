@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node build-ui.mjs && esbuild worker.mjs --bundle --format=esm --platform=browser --external:cloudflare:workers --external:node:crypto --loader:.html=text --loader:.css=text --loader:.txt=text --outfile=dist/worker.mjs",
-    "test": "node --test test_contract.mjs test_sensing.mjs",
+    "test": "node --test test_contract.mjs test_sensing.mjs test_associations.mjs",
     "dev": "node build-ui.mjs && wrangler dev --ip 127.0.0.1 --port 8787",
     "check": "node build-ui.mjs && wrangler types && tsc --noEmit"
   },

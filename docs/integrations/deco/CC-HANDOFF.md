@@ -1,5 +1,30 @@
 # CC handoff — stock Deco research
 
+
+## Latest continuation: attachment build deployed, live gate pending
+
+2026-10-17: playbook11 and E84–E88 describe the new attachment pipeline.
+Worker deployment5e11df51f0f84d87ab00274f70727548 serves the shared view on the
+companion and original RuView Hardware tab. Native node-filter reads are opt-in
+through private associations_enabled, two extra serial reads per normal cycle.
+The first real filtered response failed the array-only schema while basic
+8-node mesh collection remained connected. A diagnostic update proved a schema
+mismatch, not a TLS/auth failure. The installed parser now accepts exactly an
+empty object as an empty client report, rejects missing/null/populated objects,
+and keeps bounded type/count witnesses only locally. Fresh local sign-in and a
+complete sweep are still needed to classify the actual response and verify
+memberships. Do not call mapping verified yet; no movement/roam trial has run.
+
+Main-node previous is ignored, matching the stock UI, giving seven reported
+parent edges. Keep unknown/conflicting/stale attachments explicit. One delayed
+optional retry is allowed only for classified transient transport failures;
+rejection/schema failure stops optional reads without dropping base telemetry.
+No raw private captures, diagnostics, names, addresses or passwords go to Git or
+the cloud. Preserve the next working session. Latest focused tests:60Python,
+14cloud Node,23existing Node. Pending: protected full sweep, production
+--require-associations, browser proof and commit/push/PR evidence update.
+
+
 ## Latest continuation: existing RuView UI deployed in bridge mode
 
 2026-10-17: [playbook10](10-ruview-ui-bridge-mode.md) and E77–E83 describe the

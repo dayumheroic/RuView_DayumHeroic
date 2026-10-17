@@ -108,6 +108,12 @@ Status logs contain aggregate counters, with stdout capped around 1 MiB.
 
 ## Privacy, retention and limits
 
+The optional device-to-node feature adds node-filtered observations and bounded
+attachment changes to RuView Hardware and the companion. See
+[association source, cadence and validation](../../docs/integrations/deco/11-device-node-associations.md).
+Ingest is capped at64KiB. Unknown/conflicting/stale memberships stay explicit;
+this feature does not establish human motion or RF measurements at each Deco.
+
 No raw MACs, IPs, SSIDs, names, pins, local keys or arbitrary upstream fields
 are exported. Session aliases and timing still describe private household
 activity. The cloud stores latest state and at most 180 RF samples within a

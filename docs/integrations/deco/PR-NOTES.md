@@ -1,5 +1,28 @@
 # PR notes — stock Deco research and macOS collectors
 
+
+## Latest continuation: device-to-Deco attachment build
+
+2026-10-17. [Playbook11](11-device-node-associations.md) describes the native
+node-filtered reads, strict cloud projection and shared attachment UI. The code
+is deployed, but the protected attachment gate has not yet passed. Earlier
+combined-list acceptance is not proof of per-node attribution.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E84 | MEASURED static source | Previously pinned mapClients/networkMap/router controllers; additional pinned frame.js GET, SHA256 in playbook11 | Selector uses raw inventory MAC; IPFProxy wraps selected data in params and operation read. Non-master parent edges use previous; master previous must be ignored. No downloaded code executed |
+| E85 | SYNTHETIC tests / MEASURED checks | Python unittest discovery; cloud npm test; explicit existing mesh/ws-ticket/websocket-service Node tests |60 Python,14 cloud Node and23 existing client Node tests pass. Empty-object lists, null/missing rejection, bounded same-session transient retry, diagnostic privacy, membership ambiguity/expiry and timestamp ordering covered. One shell glob and one explicit websocket test extension were wrong; corrected commands passed. Fixtures are not hardware evidence |
+| E86 | MEASURED installation and protected failure | Private backups, source-byte comparison, owned native restart, owner-local sign-ins and normalized loopback snapshots | First filtered attempt stopped with generic failure while base8nodes/12clients remained connected. Diagnostic update identified filtered_schema: result object, client_list not array, with base8nodes/10clients. Topology corrected from8 to7parent edges by ignoring master previous. Subsequent empty-object/parser-witness update installed; acceptance pending. TP-Link password stays in memory; no session extraction |
+| E87 | MEASURED deployment / partial acceptance | Reviewed Worker upload; check_deployment.py; actual hosted Hardware tab | Deployment5e11df51f0f84d87ab00274f70727548, etag30126ba0aec7663f285925531483d0b848cb4e78591168535840274f5c2ffd7a. Private attachment asset and both views deployed. Earlier production RF/auth/WebSocket check passed116→117 while native setup_required, so it does not establish mesh/attachment acceptance |
+| E88 | SYNTHETIC local integration | Isolated literal127.0.0.1 Worker/SQLite DO | Private asset anonymous401/authenticated200, synthetic two-node/one-client ingest and parent/association round-trip pass. Local fixture never published to production |
+
+Source fields are rebuilt through allowlists. The cloud receives aliases,
+observation times/counts and bounded attachment records/events; local diagnostics
+and schema types/counts are dropped by the publisher. Read body cap64KiB; two
+extra serial status reads per cycle, no faster base interval or concurrent owner
+session access. No router writes, flashing, monitor mode or remote control route.
+
+
 ## Latest continuation: existing RuView UI and measured scalar picture
 
 2026-10-17. The owner requested actual RuView UI deployment and inspection of

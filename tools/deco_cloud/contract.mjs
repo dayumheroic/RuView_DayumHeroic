@@ -1,4 +1,5 @@
 // Rebuild every remote field. No router target, names, MACs, IPs or credentials.
+import {cleanAssociations} from './associations.mjs';
 export const CAPABILITIES = Object.freeze({complex_csi:false,human_presence:false,pose:false,vitals:false});
 const states = new Set(['live_unverified','stale','disconnected']);
 function number(x,lo,hi,nullable=true) {
@@ -29,10 +30,15 @@ export function cleanFrame(v,now=Date.now()) {
     if(!Array.isArray(items)||items.length>limit)throw new Error('Invalid rows');
     const result=items.map(x=>({id:id(x.id),online:x.online===null?null:typeof x.online==='boolean'?x.online:(()=>{throw new Error('Invalid online')})(),
       down_raw:number(x.down_raw,0,1e12),up_raw:number(x.up_raw,0,1e12),
-      signal_2g:number(x.signal_2g,0,100),signal_5g:number(x.signal_5g,0,100)}));
+      signal_2g:number(x.signal_2g,0,100),signal_5g:number(x.signal_5g,0,100),
+      parent_id:x.parent_id==null?null:id(x.parent_id),is_main:typeof x.is_main==='boolean'?x.is_main:null,
+      model:['M5','M4R','M4','E4R','E4'].includes(x.model)?x.model:null}));
     if(new Set(result.map(x=>x.id)).size!==result.length)throw new Error('Duplicate aliases');return result;
   };
-  const mesh={source_state:state(m.source_state),observed_at:m.observed_at===null?null:time(m.observed_at),nodes:rows(m.nodes,32),clients:rows(m.clients,128)};
+  const mesh={source_state:state(m.source_state),observed_at:m.observed_at===null?null:time(m.observed_at),nodes:rows(m.nodes,32),clients:rows(m.clients,128),associations:null};
+  const nodeIds=new Set((mesh.nodes||[]).map(n=>n.id));
+  for(const n of mesh.nodes||[])if(n.parent_id&&(!nodeIds.has(n.parent_id)||n.parent_id===n.id))throw Error('Invalid node parent');
+  mesh.associations=cleanAssociations(m.associations,mesh.nodes,mesh.clients,now);
   if(mesh.observed_at&&Date.parse(mesh.observed_at)>now+10000)throw new Error('Future mesh');
   if(!Array.isArray(v.probes)||v.probes.length>4)throw new Error('Invalid probes');
   const probes=v.probes.map(p=>{

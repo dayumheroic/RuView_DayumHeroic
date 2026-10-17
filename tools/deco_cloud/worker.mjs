@@ -7,6 +7,7 @@ import CSS from './style.css';
 import CLIENT from './client.js.txt';
 import {RUVIEW_HTML,RUVIEW_CSS,RUVIEW_JS,RUVIEW_NOTICES} from './ruview-assets.generated.mjs';
 import {bridgeSensing} from '../../ui/services/deco-sensing.mjs';
+import ASSOCIATION_UI from './association-assets.generated.mjs';
 const TTL=15*60*1000;
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer',
   'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
@@ -108,7 +109,7 @@ async fetch(request,env){
     if(request.method==='POST'&&p==='/api/ingest'){
       if(request.headers.get('Origin'))return reply({error:'Publisher only'},403);
       if(!await match(request.headers.get('Authorization')?.replace(/^Bearer /,''),env.PUBLISHER_HASH))return reply({error:'Publisher authentication required'},401);
-      const frame=cleanFrame(await boundedJSON(request,32768));const result=await env.FEEDS.getByName('home').ingest(frame);
+      const frame=cleanFrame(await boundedJSON(request,65536));const result=await env.FEEDS.getByName('home').ingest(frame);
       return reply(result,result.reason==='rate_limited'?429:200);
     }
     const viewer=await authenticate(request,env);
@@ -119,6 +120,7 @@ async fetch(request,env){
     if(request.method==='GET'&&p==='/ruview/')return reply(RUVIEW_HTML,200,{'Content-Security-Policy':headers['Content-Security-Policy'].replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")+"; img-src 'self' data:"});
     if(request.method==='GET'&&p==='/ruview/style.css')return reply(RUVIEW_CSS,200,{'Content-Type':'text/css; charset=utf-8'});
     if(request.method==='GET'&&p==='/ruview/app.js')return reply(RUVIEW_JS,200,{'Content-Type':'text/javascript; charset=utf-8'});
+    if(request.method==='GET'&&p==='/association-ui.js')return reply(ASSOCIATION_UI,200,{'Content-Type':'text/javascript; charset=utf-8'});
     if(request.method==='GET'&&p==='/ruview/notices')return reply(RUVIEW_NOTICES,200,{'Content-Type':'text/plain; charset=utf-8'});
     if(request.method==='GET'&&p==='/api/ruview/snapshot')return reply(bridgeSensing(await feed.snapshot()));
     if(request.method==='GET'&&p==='/api/snapshot')return reply(await feed.snapshot());

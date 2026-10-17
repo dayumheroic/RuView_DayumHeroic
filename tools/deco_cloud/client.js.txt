@@ -7,7 +7,10 @@ if($('login')){
   const token=new URLSearchParams(location.hash.slice(1)).get('invite');history.replaceState(null,'',location.pathname);
   if(token){$('token').value=token;$('login').requestSubmit();}
 }else{
-let snapshot=null,ws=null,retry=1000,stopped=false;
+let snapshot=null,ws=null,retry=1000,stopped=false,associationRenderer=null;
+const attachmentPanel=document.createElement('section');attachmentPanel.className='panel';attachmentPanel.innerHTML='<h2>Devices and Deco attachments</h2><div id="cloud-attachments"></div>';
+$('device-rows').closest('section').before(attachmentPanel);
+import('/association-ui.js').then(module=>{associationRenderer=module.renderAssociations;if(snapshot)render(snapshot);}).catch(()=>{$('cloud-attachments').textContent='Attachment view unavailable. Reload to retry.';});
 function field(id,value,unit='',n=1){$(id).textContent=Number.isFinite(value)?`${fmt(value,n)}${unit}`:'—';}
 function textCell(tr,value){const td=document.createElement('td');td.textContent=value;tr.append(td);}
 function render(v){
@@ -32,6 +35,7 @@ function render(v){
  const m=f.mesh,live=fresh&&m.source_state==='live_unverified'&&age(m.observed_at)<=90;
  $('mesh-state').textContent=live?'LIVE · UNVERIFIED':'LAST OBSERVED · STALE';field('nodes',m.nodes?.length??null,'',0);field('clients',m.clients?.length??null,'',0);
  $('mesh-time').textContent=m.observed_at?`Mesh observation · ${Math.floor(age(m.observed_at))}s ago`:'No mesh observation';
+ if(associationRenderer)associationRenderer($('cloud-attachments'),{...m,source_state:live?'live_unverified':'stale'});
  $('mesh-map').replaceChildren();for(const [i,node] of (m.nodes||[]).entries()){const div=document.createElement('div');div.className='node';const b=document.createElement('b');b.textContent=`N${i+1}`;const span=document.createElement('span');span.textContent=`2G ${node.signal_2g??'—'} · 5G ${node.signal_5g??'—'}`;div.append(b,span);$('mesh-map').append(div);}
  $('device-rows').replaceChildren();for(const row of m.clients||[]){const tr=document.createElement('tr');for(const x of [row.id.slice(0,12),row.online===true?'Yes':row.online===false?'No':'Unknown',row.down_raw??'—',row.up_raw??'—'])textCell(tr,String(x));$('device-rows').append(tr);}
  $('probes').replaceChildren();for(const p of f.probes){const tr=document.createElement('tr');for(const x of [p.kind==='gateway'?'Gateway control':p.id,`${fmt(p.rtt_ms)} ms`,`${fmt(p.loss_percent,0)}%`,`${Math.floor(age(p.observed_at))}s`])textCell(tr,x);$('probes').append(tr);}
