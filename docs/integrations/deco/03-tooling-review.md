@@ -25,7 +25,7 @@ commit; vendored instructions are scoped to their asset directories.
 |---|---|---|
 | `reverse-engineering/rea` | Upstream `3e7c6302233ecbcb9b92e43ee5a60337738961bd`; ASSET, README, AGENTS, package manifest, SECURITY, DISCLAIMER, LICENSE | Optional later analysis of lawfully obtained artifacts. Not required for initial inventory; not installed or executed |
 | `security/power-pwn` | Upstream `88456806d93b9c0c9c777db7c72c40ea2c26af72`; ASSET plus root catalog | Microsoft 365/Power Platform tooling; no Deco applicability established. Do not run |
-| `osint/Aliens_eye` | Root catalog only | Username OSINT does not answer mesh telemetry questions |
+| `osint/Aliens_eye` | Root catalog plus pinned ASSET and README review, E64 | Username OSINT does not answer mesh telemetry questions |
 | Code understanding/design assets | Root catalog only | Optional engineering references; no network capability inferred |
 
 REA's top-level license is MIT, but bundled providers/tools keep separate
@@ -62,6 +62,14 @@ uses a same-socket leaf pin, fixed read forms and constant error messages.
 Protocol attribution is included with the collector. cryptography 48.0.1,
 cffi 2.1.1 and pycparser 3.11 wheels were installed in an isolated ignored venv.
 The Mac RF reader uses Apple CoreWLAN directly. No `improvements` asset changed.
+
+E64 revisits REA's `docs/packet-captures.md`, `docs/pcap-analysis.md` and
+`docs/web-network-captures.md` at the same pin. These inspect saved evidence;
+they do not acquire radio packets. The selected-field packet provider requires
+Linux/prlimit; packet-summary inspection reports a macOS capability gap.
+Do not bypass those platform guards or treat a TLS metadata summary as CSI.
+No REA install/runtime was invoked. See [device/feedback research](08-device-metadata-and-feedback.md)
+for exact limits and a separate receiver experiment plan.
 
 Gate: each selected tool has a pin, license decision, reviewed entry point,
 bounded execution plan and data/cleanup policy. Current discovery selects no

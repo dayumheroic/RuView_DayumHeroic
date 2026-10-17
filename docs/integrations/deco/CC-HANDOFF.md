@@ -2,6 +2,17 @@
 
 ## Objective and authority
 
+Newest research E63–E67: owner asks about existing clients and handshake metadata.
+[Playbook 08](08-device-metadata-and-feedback.md) locates REA's offline capture
+analysis, separates security handshakes from repeated beamforming feedback,
+and records existing node signal fields versus missing client signal fields.
+A 90-second local observer completed; no router polling increase. An inactive
+libpcap capability query returned permission-denied, not a compatibility verdict.
+No monitor-mode activation or packet capture. Second Mac/Ethernet availability
+is pending for a later isolated receiver trial. Detailed household inventory
+and observations stay private. Existing RuView BFI code is a research asset,
+not proof of Deco capture compatibility or movement detection.
+
 Latest continuation: E61 confirms a successful protected local snapshot with
 eight nodes/twelve client records. The owner now requests continuous delivery
 and private phone/iPad access through their Cloudflare account. See

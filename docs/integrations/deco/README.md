@@ -23,6 +23,7 @@ and the complete eight-node inventory are in playbook 01 and PR notes.
 | [05 macOS bridge](05-macos-bridge.md) | Deliver a small local collector with reliable diagnostics | Offline tests, live exact-firmware acceptance, installation and removal checks |
 | [06 Raw telemetry avenues](06-raw-telemetry-research.md) | Investigate APIs, logs, security findings, firmware, BFI and native RF access | Per-avenue evidence, exclusions and falsifiable next gate |
 | [07 Continuous feed and private cloud](07-continuous-feed-and-private-cloud.md) | Deliver observations to owner/invited mobile viewers through Cloudflare | Proposed stream/authentication contract and deployment gates; not deployed |
+| [08 Device metadata and feedback](08-device-metadata-and-feedback.md) | Investigate owned clients, packet metadata and beamforming feedback without flashing | Measured node/client signal-field coverage, read-only capture preflight and controlled-trial gates |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and
