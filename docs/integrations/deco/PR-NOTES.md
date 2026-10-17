@@ -201,6 +201,8 @@ second failure collection stops. Updated UI displays retained records as last
 observed/Stale rather than erasing them or presenting them as fresh. Reset and
 app exit still discard the in-memory session; credentials are not persisted.
 
+| E60 | SYNTHETIC mesh UI + MEASURED local deployment | Clearly labelled isolated fixture, actual UI assets and real current-link RF; installed-service byte comparison | Stale badge, last-observed counts/table and capture time render correctly. Pause removes the fixture records and enables Reconnect; no router requests or owner credentials. Private screenshots saved. Installed service/assets match reviewed source and return HTTP200 with RF available; final state setup_required. A bounded2-minute local API observation window captured no new successful mesh snapshot, so new-policy hardware acceptance remains pending |
+
 ## Initial documentation-phase validation (historical)
 
 Performance continuation validation: four staged documents, twelve Markdown
