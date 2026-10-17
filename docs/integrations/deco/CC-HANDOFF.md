@@ -3,7 +3,7 @@
 
 ## Latest continuation: attachment build deployed, live gate pending
 
-2026-10-17: playbook11 and E84–E88 describe the new attachment pipeline.
+2026-10-17: playbook11 and E84–E89 describe the new attachment pipeline.
 Worker deployment5e11df51f0f84d87ab00274f70727548 serves the shared view on the
 companion and original RuView Hardware tab. Native node-filter reads are opt-in
 through private associations_enabled, two extra serial reads per normal cycle.
@@ -22,7 +22,7 @@ rejection/schema failure stops optional reads without dropping base telemetry.
 No raw private captures, diagnostics, names, addresses or passwords go to Git or
 the cloud. Preserve the next working session. Latest focused tests:60Python,
 14cloud Node,23existing Node. Pending: protected full sweep, production
---require-associations, browser proof and commit/push/PR evidence update.
+--require-associations, a live attachment browser proof. Code3542180 is pushed and PR34 is updated; current unavailable-state browser screenshot is private. The local synthetic dev server was stopped.
 
 
 ## Latest continuation: existing RuView UI deployed in bridge mode

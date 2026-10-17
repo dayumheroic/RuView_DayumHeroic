@@ -74,7 +74,7 @@ signed-in companion, leaving the shared login script independent of it.
 
 ## Validation and installation evidence
 
-E84 onward in [PR notes](PR-NOTES.md) records focused tests and deployment.
+E84–E89 in [PR notes](PR-NOTES.md) records focused tests and deployment.
 Synthetic tests exercise fixed filters, empty-object/missing/null distinctions, bounded same-session transient retry, diagnostic privacy, identity/parent privacy, unique versus
 ambiguous claims, expiry, optional failure without breaking base collection,
 timestamp ordering, strict cloud references and UI stale states. They do not
