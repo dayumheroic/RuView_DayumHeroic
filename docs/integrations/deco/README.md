@@ -24,6 +24,10 @@ Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and
 their limitations are in [SOURCES.md](SOURCES.md).
 
+Separate owner-requested tuning report for another Codex session:
+[performance and coverage handoff](PERFORMANCE-HANDOFF.md). It proposes measured,
+reversible experiments; no live tuning settings have been changed.
+
 Evidence labels:
 
 - **MEASURED**: a local command or exact-device observation with reproducer.

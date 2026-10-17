@@ -95,17 +95,31 @@ actual addresses, certificate and source/log captures remain outside Git.
 | E42 | MEASURED | `/usr/bin/time -l mac-radio --samples 5 --interval 1`; pinned handshake followed by local public-key-only encryption of a synthetic string | Five available native samples, 4.04 s elapsed, 0.01 s user/0.00 s system, 4,833,280-byte peak process RSS. Short run excludes service/daemon accounting and 15-minute steady-state acceptance. Legacy 512-bit public-key encryption succeeds (64-byte ciphertext), no protected request or credential attempt |
 | E43 | MEASURED structural/privacy review | Full staged-file scan, Markdown local-link/fence check, `git diff --cached --check`, manual review |16 staged text files,11 Markdown documents,18 local links; zero broken links/fences, private-marker matches, runtime artifacts or whitespace errors. Venv/cache ignored. This is a bounded marker check plus manual review, not a comprehensive secret scanner |
 
+## Browser telemetry and performance continuation
+
+| ID | Label | Reproducer/source | Observed result and practical limit |
+|---|---|---|---|
+| E44 | MEASURED browser observation | Existing signed-in Chrome→Clients; DOM-backed extraction of rate pairs/connection labels at2026-10-17T01:13:19.282Z | Ten rows, three nonzero, five Wireless(5G)/five unknown. Identifier-free private JSON mode0600 saved outside Git. Normal browser session supports further research without standalone credential entry; not a protected API fixture or unattended collector |
+| E45 | MEASURED short baseline | `ping -c 20 -i 1 <verified main>` from current Mac Wi-Fi |20/20 replies,0% loss; min/avg/max/stddev4.258/34.655/210.050/47.912ms. Uncontrolled ICMP variation, not a throughput test or causal diagnosis |
+| E46 | CLAIMED vendor specs / proposed experiments | Official M5/M4/E4v4 specifications, node-count/backhaul/connection-preference/QoS guidance; PERFORMANCE-HANDOFF | Separate report requested for another Codex session. Eight nodes vs general six-node wireless guidance and E4 Fast Ethernet are test priorities, not proven causes. No tuning, node removal, mode change, purchase or cross-session message performed |
+
 Current validation: E37/E38/E40/E42/E43 are terminal passes. Full staged review
 covers whitespace, document links, unsupported claims and private identifiers.
 No private captures, binaries, venv or session state belong in this PR.
 Rust workspace/archive pipeline are unchanged and were not built; cargo is not
 installed. No active CI exists at the baseline. Authenticated mesh acceptance,
 resource budgets, sleep/wake and the complete application remain unfinished.
-The immediate gate is one owner-authenticated local-terminal capture, followed
-by sanitized field review and comparison with the stock UI. No browser session
+The standalone collector still needs one owner-authenticated capture, followed
+by sanitized field review and UI comparison. E44 demonstrates that normal signed-in
+browser observation can continue independently; inspect its outputs directly. No browser session
 extraction, applicable exploit or stock CSI stream is established.
 
 ## Initial documentation-phase validation (historical)
+
+Performance continuation validation: four staged documents, twelve Markdown
+documents inspected, nineteen local links; no broken links/fences, private-marker
+matches or whitespace errors. Runtime code was unchanged, so its passing checks
+were not repeated for this report-only continuation. Browser returned to Network Map.
 
 Documentation validation: PASS. A Python 3 standard-library check inspected all
 nine documents and ten local Markdown links, verified pinned RuView source

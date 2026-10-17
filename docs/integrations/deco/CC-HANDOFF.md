@@ -41,7 +41,9 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
    establish the mesh SSH key size. Browser credentials/cookies were not extracted.
 3. First protected API capture needs owner password entry in the local terminal
    (`getpass`, one attempt, no persistence). A private local launcher was prepared
-   outside Git; obtain the capture summary from the owner. Keep all private JSON
+   outside Git; inspect any capture files directly rather than asking the owner to
+   read them. Existing signed-in Chrome supports further UI telemetry research
+   while standalone enrollment remains unfinished. Keep all private JSON
    outside this public repo; review redaction before turning fields into fixtures.
    Default reads are devices, clients, performance and mode. Extended signal/traffic
    reads are optional and still unverified on this firmware. Stop on first failure.
