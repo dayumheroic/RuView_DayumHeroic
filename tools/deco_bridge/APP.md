@@ -22,8 +22,11 @@ random 256-bit bridge key via a request header. Its WebKit data store is
 ephemeral. No bridge token in URLs, browser persistence or request logs.
 RF starts immediately without a Deco login. The owner password goes into the
 app's local form, after comparing the displayed certificate pin with the trusted
-router certificate. One explicit attempt per app run; no owner password is
-saved. Quit/reopen after rejection or pause. No credential is needed in chat.
+router certificate. One explicit attempt per collection session; no owner
+password is saved. After rejection or pause, use **Reconnect Deco** to return
+to sign-in. It enables after any in-flight operation finishes and at least
+30 seconds have elapsed since the last sign-in attempt. Reset never contacts
+the router or logs in automatically. No credential is needed in chat.
 Python/JavaScript cannot guarantee secure erasure of in-memory strings.
 
 **MEASURED:** on the development Intel Mac, the installed service returned real
@@ -39,8 +42,9 @@ steady-state full-app resource acceptance remain unverified.
 | Endpoint | Contract |
 |---|---|
 | `GET /v1/snapshot` | `ruview.bridge.v0`, containing separate `ruview.local_link.v0` radio and `ruview.mesh.v0` mesh records, connection phase and source states. Unknown node/client lists are `null`, not zero/empty. Target/pin are local config metadata, never credentials. |
-| `POST /v1/deco/connect` | Bounded JSON `{password, pin_confirmed: true}`; explicitly requests one login and the four default status reads. The checkbox is an owner's trust assertion, not automatic certificate verification. |
+| `POST /v1/deco/connect` | Bounded JSON `{password, pin_confirmed: true}`; explicitly requests one login and device/client reads. Unused performance/mode forms are excluded from dashboard collection. The checkbox is an owner's trust assertion, not automatic certificate verification. |
 | `POST /v1/deco/pause` | Bounded JSON `{}`; stops subsequent Deco reads and immediately removes the mesh snapshot. One already in-flight read may finish. |
+| `POST /v1/deco/reset` | Bounded JSON `{}`; explicit recovery only from failed/paused after worker exit and the sign-in cooldown. Clears collection state/aliases, restores sign-in, and preserves RF collection. No router request. |
 
 All data/actions require `Authorization: Bearer <private bridge_key>`. It lives
 in the owner-only `config.json` under
@@ -74,9 +78,20 @@ timeouts and 4 KiB mutation bodies. Separate RF and mesh workers keep sampling
 out of the HTTP handler. Router reads retain the collector's 1 MiB limit and
 six-second inactivity timeout (not an absolute whole-response deadline). A
 complete device/client schema is required before publishing a mesh batch.
-API rates retain unknown units, aliases are per-run HMACs, and RF has no
+API rates retain unknown units, aliases are per-collection-session HMACs, and RF has no
 SSID/BSSID. No raw protected payload is retained by the service. Use the
 separate private CLI capture when an owner-authenticated fixture can be obtained.
+
+## Owner-reported failure and recovery
+
+The first owner login reached device/client reads and failed at the later
+performance form. The old app discarded that entire batch and hid sign-in
+without offering recovery. Those two defects are fixed: the dashboard now reads
+only the two forms it uses, and Reconnect Deco restores sign-in locally. The
+performance failure's underlying router/transport cause is not established.
+The CLI retains its separate four-form research batch and private partial output.
+Authentication/read-return success does not establish normalized schema or units;
+full hardware acceptance still needs a successful dashboard snapshot.
 
 ## Check and remove
 

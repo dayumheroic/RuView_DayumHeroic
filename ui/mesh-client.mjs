@@ -19,7 +19,7 @@ export class MeshClient {
     this.fetcher = fetcher;
   }
   async request(path, payload) {
-    if (!['/v1/snapshot', '/v1/deco/connect', '/v1/deco/pause'].includes(path)) throw new Error('Unsupported endpoint.');
+    if (!['/v1/snapshot', '/v1/deco/connect', '/v1/deco/pause', '/v1/deco/reset'].includes(path)) throw new Error('Unsupported endpoint.');
     let response;
     try { response = await this.fetcher(this.url + path, {
       method: payload === undefined ? 'GET' : 'POST',

@@ -107,6 +107,8 @@ class State:
         self.phase = "setup_required"
         self.failure_stage = None
         self.attempted = False
+        self.last_attempt = None
+        self.mesh_worker = None
         self.workers = []
 
     def start_radio(self):
@@ -133,9 +135,11 @@ class State:
             raise BridgeError("Enter an owner password of at most 1024 bytes")
         with self.lock:
             if self.attempted or self.phase == "paused":
-                raise BridgeError("Restart the app before another explicit sign-in attempt")
+                raise BridgeError("Use Reconnect Deco before another explicit sign-in attempt")
             self.attempted, self.phase = True, "connecting"
+            self.last_attempt = time.monotonic()
         worker = threading.Thread(target=self.mesh_loop, args=(password,), daemon=True)
+        self.mesh_worker = worker
         self.workers.append(worker)
         worker.start()
 
@@ -148,7 +152,9 @@ class State:
             password = None
             while not self.stop.is_set() and not self.mesh_stop.is_set():
                 capture = {"observed_at": utcnow(), "responses": {}}
-                for name in ("devices", "clients", "performance", "mode"):
+                # Only these two responses contribute to the dashboard contract.
+                # An unused performance/mode form must not gate a useful snapshot.
+                for name in ("devices", "clients"):
                     if self.stop.is_set() or self.mesh_stop.is_set():
                         return
                     stage = "read_" + name
@@ -183,6 +189,26 @@ class State:
             # Drop aliases/measurements from the API immediately. An in-flight read may finish.
             self.mesh, self.mesh_time, self.mesh_wall = None, None, None
 
+    def recovery(self):
+        """Called while holding lock. No reset while a router operation is active."""
+        active = self.mesh_worker is not None and self.mesh_worker.is_alive()
+        delay = max(0, math.ceil(30 - (time.monotonic() - self.last_attempt))) if self.last_attempt is not None else 0
+        return {"can_reset": self.phase in ("failed", "paused") and not active and delay == 0,
+                "retry_after_seconds": delay, "worker_active": active}
+
+    def reset(self):
+        # Explicit local action only: forget the failed/paused collection session.
+        # It never logs in, contacts the router, or restarts current-link RF.
+        with self.lock:
+            if not self.recovery()["can_reset"]:
+                raise BridgeError("Reconnect is available after collection stops and the 30-second sign-in cooldown ends")
+            self.mesh_stop.clear()
+            self.mesh, self.mesh_time, self.mesh_wall = None, None, None
+            self.salt = secrets.token_bytes(32)
+            self.attempted, self.failure_stage, self.phase = False, None, "setup_required"
+            self.mesh_worker = None
+            self.workers = [worker for worker in self.workers if worker.is_alive()]
+
     def snapshot(self, now=None):
         now = time.monotonic() if now is None else now
         with self.lock:
@@ -212,6 +238,7 @@ class State:
             return {"schema": "ruview.bridge.v0", "radio": radio, "mesh": mesh,
                     "connection": self.phase, "capabilities": CAPABILITIES,
                     "failure_stage": self.failure_stage,
+                    "recovery": self.recovery(),
                     "target": {"host": self.config["host"], "certificate_sha256": self.config["pin"]},
                     "sign_in_attempted": self.attempted}
 
@@ -282,7 +309,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         if not self.permitted(False):
             return
-        if self.path not in ("/v1/snapshot", "/v1/deco/connect", "/v1/deco/pause"):
+        if self.path not in ("/v1/snapshot", "/v1/deco/connect", "/v1/deco/pause", "/v1/deco/reset"):
             self.reply(404, {"error": "Unknown endpoint"})
             return
         self.send_response(204)
@@ -317,7 +344,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.permitted():
             return
-        if self.path not in ("/v1/deco/connect", "/v1/deco/pause"):
+        if self.path not in ("/v1/deco/connect", "/v1/deco/pause", "/v1/deco/reset"):
             self.reply(404, {"error": "Unknown endpoint"})
             return
         try:
@@ -330,8 +357,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError()
             if self.path == "/v1/deco/connect":
                 self.server.state.connect(payload.get("password"), payload.get("pin_confirmed"))
-            else:
+            elif self.path == "/v1/deco/pause":
                 self.server.state.pause()
+            else:
+                self.server.state.reset()
             self.reply(202, {"accepted": True})
         except BridgeError as error:
             self.reply(409, {"error": str(error)})

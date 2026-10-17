@@ -43,13 +43,19 @@ REA scoped instructions/security policy were inspected. No vendored tool ran.
    establish the mesh SSH key size. Browser credentials/cookies were not extracted.
 3. First protected API acceptance needs owner password entry locally: the app
    now has a direct password form and pin-comparison gate, or use terminal
-   `getpass` for a private CLI fixture. One attempt per run, no persistence.
+   `getpass` for a private CLI fixture. One attempt per collection session, no
+   persistence; the app now has explicit Reconnect Deco after worker exit and a
+   30-second sign-in cooldown. The CLI remains one attempt per run.
    A private local launcher was prepared
    outside Git; inspect any capture files directly rather than asking the owner to
    read them. Existing signed-in Chrome supports further UI telemetry research
    while standalone enrollment remains unfinished. Keep all private JSON
    outside this public repo; review redaction before turning fields into fixtures.
-   Default reads are devices, clients, performance and mode. Extended signal/traffic
+   App reads are devices/clients only. CLI defaults also include performance/mode.
+   The owner's first login passed authentication/device/client request return
+   checks, then failed at performance before normalization; no response fixture
+   or schema/unit acceptance followed. App collection now excludes that unused
+   form and offers recovery. Extended signal/traffic
    reads are optional and still unverified on this firmware. Stop on first failure.
 4. Focused synthetic tests cover crypto/login/read, endpoint denial, pin mismatch,
    response limits, private writes and unknown data. Live probe is separate
@@ -83,6 +89,9 @@ browser DOM observations must never be relabeled as unattended API captures.
 Next: one explicit owner login in the app; inspect API schema/units and compare
 with stock UI, then capture/redact an exact-firmware CLI fixture. If unsupported,
 stop and fix the adapter using observed fields, without automatic retries.
+The updated app was reopened at sign-in after the first failed collection.
+Inspect local snapshot output directly when the owner retries. Never request
+the password in chat or try to recover it from process/browser memory.
 
 Mesh/device telemetry belongs in a separate surface. Existing sensing outputs
 and MQTT publication are not generic Deco inputs. A native provider needs an

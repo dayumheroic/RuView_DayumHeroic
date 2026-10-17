@@ -3,7 +3,7 @@
 ## Implemented preview (supersedes proposed routes and retry policy below)
 
 The separate sidecar contract now exists: authenticated `GET /v1/snapshot`,
-`POST /v1/deco/connect` and `POST /v1/deco/pause`, plus fixed static dashboard
+`POST /v1/deco/connect`, `POST /v1/deco/pause` and `POST /v1/deco/reset`, plus fixed static dashboard
 assets. Full wire, trust, lifecycle and installation details are in
 [APP.md](../../../tools/deco_bridge/APP.md). The snapshot separates Mac scalar RF
 from normalized mesh data. UI `mesh.html` is linked from RuView navigation and
@@ -15,7 +15,9 @@ Protected Deco schema/units still need real owner-authenticated acceptance.
 Credentials stay in memory; no Keychain implementation or automatic auth retry.
 RF stale policy is 15 seconds; mesh is 90 seconds or a later failure. Poll mesh
 30 seconds after each successful batch. Retained stale records never populate
-current counts. Pausing drops mesh data and requires app restart to reconnect.
+current counts. Pausing drops mesh data; explicit Reconnect Deco restores sign-in
+after worker exit and a 30-second sign-in cooldown. The dashboard polls only
+device/client lists, so unused performance/mode reads cannot discard its data.
 
 The remaining sections preserve the original broader design proposal and
 historical research. Proposed fields, routes, Keychain and reconnect/backoff

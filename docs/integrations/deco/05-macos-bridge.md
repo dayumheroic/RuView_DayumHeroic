@@ -67,6 +67,7 @@ native process RSS (E42); this does not establish the 15-minute application budg
 | RuView offline | Collector bounded and healthy; UI explains separation |
 | Hostile Origin or wrong local token | Request denied, no device data disclosed |
 | Polling paused | No router requests; state visibly paused/stale |
+| Failed/paused recovery | Visible Reconnect Deco, disabled during in-flight operation/cooldown; explicit reset restores local sign-in without stopping RF |
 | Uninstall | Process/startup entry removed; optional Keychain/config removal confirmed |
 
 Proposed performance budget (unmeasured): steady resident memory below 100 MiB,

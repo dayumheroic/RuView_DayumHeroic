@@ -37,3 +37,13 @@ test('network failure produces a useful disconnected message', async () => {
   const client = new MeshClient('http://localhost:8766', 'a'.repeat(64), async () => {throw new TypeError('network error');});
   await assert.rejects(client.request('/v1/snapshot'), /Local companion unavailable/);
 });
+test('explicit reconnect uses only the local reset endpoint', async () => {
+  let call;
+  const client = new MeshClient('http://localhost:8766', 'a'.repeat(64), async (...args) => {
+    call = args; return {ok:true,text:async () => '{"accepted":true}'};
+  });
+  await client.request('/v1/deco/reset', {});
+  assert.equal(call[0], 'http://localhost:8766/v1/deco/reset');
+  assert.equal(call[1].method, 'POST');
+  assert.equal(call[1].body, '{}');
+});

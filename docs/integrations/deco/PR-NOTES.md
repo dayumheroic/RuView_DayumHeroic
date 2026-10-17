@@ -157,6 +157,25 @@ PR comment with the final commit. RF hardware/API/UI checks do not close the
 separate protected Deco gate. Next action is the app's local owner sign-in,
 then inspect results directly and adapt only to witnessed schema fields.
 
+## Recovery defect — 2026-10-16 local / 2026-10-17 UTC
+
+Continuation base `3292664884ba6a83c2b585cfcf86df7098269522`. The owner
+reported a failed performance read and no restart/reconnect control. Exact
+target remains main M5 hardware3.2 / 1.9.5 Build20260602 Rel.25369.
+
+| ID | Label | Reproducer/source | Expected / actual / limit |
+|---|---|---|---|
+| E52 | MEASURED owner screenshot + local API | Existing installed app, authenticated loopback snapshot | `failed`, `failure_stage=read_performance`, sign-in attempted, no normalized node/client snapshot. Code reaches this stage only after login and device/client request returns pass. Normalization had not run; protected schema/units and the performance failure's underlying cause remain unknown. Failure summary saved owner-only outside Git; no password/session material inspected |
+| E53 | SYNTHETIC / local regression checks | Python unittest discovery and Node mesh-client tests |36 Python +7 Node tests pass. Required device/client reads succeed even when the unused forms would throw. Explicit reset makes no router/auth calls, preserves RF, requires cooldown, rejects active reads/healthy collection, and allows a subsequent owner-initiated attempt. HTTP reset still requires bridge auth. Live CLI four-form research flow unchanged |
+| E54 | SYNTHETIC failure UI + MEASURED UI action | Separate loopback test service injected old performance-failure state, real current-link RF, and a fake session factory that cannot contact the router | Reconnect Deco visibly enabled; clicking it restores the password form while RF remains available. No owner credential entered and no router request. Screenshot private. Installed app service/assets updated and app reopened at sign-in; new protected-hardware retry still pending |
+
+The app now polls only the two forms used by its normalized contract. No
+secondary performance/mode call can gate that snapshot. Recovery is explicit:
+failed/paused → worker finished +30seconds since sign-in → local reset → setup.
+No automatic auth retry or saved password. This supersedes earlier app-level
+“restart after one attempt per run” instructions; CLI behavior is unchanged.
+The user does not need to find a hidden app restart action to recover.
+
 ## Initial documentation-phase validation (historical)
 
 Performance continuation validation: four staged documents, twelve Markdown

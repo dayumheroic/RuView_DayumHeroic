@@ -6,7 +6,7 @@ bootstrap?.remove();
 let client = null, busy = false, generation = 0, lastSample = null;
 const history = [];
 const phases = {setup_required: 'Deco sign-in required', connecting: 'Reading protected Deco telemetry…',
-  connected: 'Deco collection connected', failed: 'Deco read stopped; restart the app to sign in again', paused: 'Deco collection paused; restart the app to resume'};
+  connected: 'Deco collection connected', failed: 'Deco collection stopped; use Reconnect Deco to sign in again', paused: 'Deco collection paused; use Reconnect Deco to resume'};
 const failureStages = {authentication:'authentication', read_devices:'device-list read', read_clients:'client-list read',
   read_performance:'performance read', read_mode:'mode read', response_schema:'response schema validation'};
 function field(id, value, unit = '') { $(id).textContent = Number.isFinite(value) ? `${value}${unit}` : '—'; }
@@ -18,6 +18,7 @@ function clearReadings(message) {
   badge('rf-state', 'disconnected'); badge('mesh-state', 'disconnected');
   $('mesh-message').textContent = 'Connect to the local companion to read telemetry.';
   $('pause').disabled = true; $('signin-panel').hidden = true; $('clients-panel').hidden = true;
+  $('reconnect').hidden = true; $('recovery-message').hidden = true;
   $('signal-line').setAttribute('points', '');
   $('bridge-form').hidden = false;
   history.length = 0; lastSample = null;
@@ -25,7 +26,7 @@ function clearReadings(message) {
 function render(value) {
   const {radio, mesh} = value;
   const phase = value.connection === 'failed' && failureStages[value.failure_stage]
-    ? `Deco stopped during ${failureStages[value.failure_stage]}; restart the app before another sign-in`
+    ? `Deco stopped during ${failureStages[value.failure_stage]}; use Reconnect Deco to sign in again`
     : (phases[value.connection] || 'Disconnected');
   $('connection').textContent = phase;
   $('updated').textContent = `Companion reached ${new Date().toLocaleTimeString()}`;
@@ -49,6 +50,15 @@ function render(value) {
   $('mesh-message').textContent = meshCurrent ? 'Counts describe API records, not people. Units and firmware schema remain unverified.' : phase;
   $('mesh-age').textContent = mesh.observed_at ? `Last API capture: ${mesh.observed_at} · ${Math.floor(mesh.age_seconds)} seconds ago` : 'No API capture yet';
   $('pause').disabled = !['connecting','connected'].includes(value.connection);
+  const recovering = ['failed','paused'].includes(value.connection);
+  $('pause').hidden = recovering;
+  $('reconnect').hidden = !recovering;
+  $('reconnect').disabled = value.recovery?.can_reset !== true;
+  $('recovery-message').hidden = !recovering;
+  $('recovery-message').textContent = value.recovery?.worker_active
+    ? 'Waiting for the current router operation to finish.'
+    : value.recovery?.retry_after_seconds > 0 ? `Reconnect available in ${value.recovery.retry_after_seconds} seconds.`
+      : 'Reconnect returns to local sign-in. Mac Wi-Fi measurements continue.';
   $('signin-panel').hidden = value.sign_in_attempted || value.connection !== 'setup_required';
   $('deco-target').textContent = value.target?.host || '—';
   $('deco-pin').textContent = value.target?.certificate_sha256 || '—';
@@ -89,6 +99,15 @@ $('pause').addEventListener('click', async () => {
   if(!client) return;
   try { await client.request('/v1/deco/pause', {}); await refresh(); }
   catch(error) { clearReadings(error.message); }
+});
+$('reconnect').addEventListener('click', async () => {
+  if(!client) return;
+  $('reconnect').disabled = true;
+  try {
+    await client.request('/v1/deco/reset', {});
+    $('deco-password').value = '';
+    await refresh();
+  } catch(error) { $('connection').textContent = error.message; }
 });
 if (/^[a-f0-9]{64}$/.test(initialKey)) {
   try { client = new MeshClient(location.origin, initialKey); refresh(); }

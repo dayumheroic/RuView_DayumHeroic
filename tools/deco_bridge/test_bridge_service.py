@@ -96,10 +96,79 @@ class StateTests(unittest.TestCase):
         while self.state.phase == "connecting" and time.monotonic() < deadline:
             time.sleep(.01)
         result = self.state.snapshot()
-        self.assertEqual(calls, ["login", "devices", "clients", "performance", "mode"])
+        self.assertEqual(calls, ["login", "devices", "clients"])
         self.assertEqual(result["mesh"]["clients"], [])
         self.assertNotIn("aa:bb:cc", json.dumps(result))
         self.assertEqual(result["mesh"]["source_state"], "live_unverified")
+
+    def test_unused_performance_form_cannot_break_required_snapshot(self):
+        calls = []
+        class Firmware:
+            def login(self, _password): pass
+            def read(self, name):
+                calls.append(name)
+                if name == "devices": return {"device_list": []}
+                if name == "clients": return {"client_list": []}
+                raise RuntimeError("Unsupported optional form")
+        self.state.factory = Firmware
+        self.state.connect("synthetic-password", True)
+        deadline = time.monotonic() + 2
+        while self.state.phase == "connecting" and time.monotonic() < deadline:
+            time.sleep(.01)
+        self.assertEqual(self.state.phase, "connected")
+        self.assertEqual(calls, ["devices", "clients"])
+        self.assertEqual(self.state.snapshot()["mesh"]["nodes"], [])
+
+    def test_explicit_reset_has_cooldown_and_does_not_log_in(self):
+        calls = []
+        class Broken:
+            def login(self, _password):
+                calls.append("login")
+                raise RuntimeError("synthetic")
+        self.state.factory = Broken
+        self.state.connect("synthetic-password", True)
+        self.state.mesh_worker.join(2)
+        self.assertFalse(self.state.snapshot()["recovery"]["can_reset"])
+        with self.assertRaises(Exception): self.state.reset()
+        self.state.last_attempt = time.monotonic() - 31
+        self.assertTrue(self.state.snapshot()["recovery"]["can_reset"])
+        radio = {"source_state": "live_unverified", "available": True}
+        self.state.radio = radio
+        self.state.reset()
+        self.assertEqual(calls, ["login"])
+        self.assertIs(self.state.radio, radio)
+        self.assertFalse(self.state.attempted)
+        self.assertEqual(self.state.phase, "setup_required")
+        self.state.connect("synthetic-password", True)
+        self.state.mesh_worker.join(2)
+        self.assertEqual(calls, ["login", "login"])
+
+    def test_pause_cannot_reset_while_router_read_is_in_flight(self):
+        entered, release = threading.Event(), threading.Event()
+        class Slow:
+            def login(self, _password): pass
+            def read(self, _name):
+                entered.set()
+                release.wait(3)
+                return {"device_list": []}
+        self.state.factory = Slow
+        self.state.connect("synthetic-password", True)
+        self.assertTrue(entered.wait(2))
+        self.state.pause()
+        self.state.last_attempt = time.monotonic() - 31
+        try:
+            self.assertTrue(self.state.snapshot()["recovery"]["worker_active"])
+            with self.assertRaises(Exception): self.state.reset()
+        finally:
+            release.set()
+            self.state.mesh_worker.join(2)
+        self.state.reset()
+        self.assertEqual(self.state.phase, "setup_required")
+        self.assertIsNone(self.state.snapshot()["mesh"]["clients"])
+
+    def test_reset_is_rejected_during_normal_collection(self):
+        self.state.phase = "connected"
+        with self.assertRaises(Exception): self.state.reset()
 
     def test_bad_schema_stops_collection(self):
         class Firmware:
@@ -202,6 +271,17 @@ class HTTPTests(unittest.TestCase):
         self.assertEqual(self.request("POST", "/v1/deco/connect", auth, "[]")[0], 400)
         self.assertEqual(self.request("POST", "/v1/deco/connect", auth, '{"password":"synthetic","pin_confirmed":false}')[0], 409)
         self.assertFalse(self.state.attempted)
+
+    def test_recovery_endpoint_requires_auth_and_restores_setup(self):
+        auth = {"Authorization": "Bearer " + CONFIG["bridge_key"], "Content-Type": "application/json"}
+        self.assertEqual(self.request("POST", "/v1/deco/reset", {"Content-Type":"application/json"}, "{}")[0], 401)
+        self.state.phase, self.state.attempted = "failed", True
+        try:
+            self.assertEqual(self.request("POST", "/v1/deco/reset", auth, "{}")[0], 202)
+            self.assertEqual(self.state.phase, "setup_required")
+            self.assertFalse(self.state.attempted)
+        finally:
+            self.state.phase, self.state.attempted = "setup_required", False
 
 
 if __name__ == "__main__":
