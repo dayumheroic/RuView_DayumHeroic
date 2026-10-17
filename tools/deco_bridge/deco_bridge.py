@@ -370,7 +370,32 @@ class AssociationTracker:
                 "node_observations": recent, "clients": records, "events": self.events.copy()}
 
 
-def normalize(capture, salt, synthetic=False):
+def configured_room(row, bindings):
+    """Match owner-configured names locally; export only an opaque room key."""
+    if not isinstance(bindings, dict) or len(bindings) > 32:
+        return None
+    def name(value):
+        return re.sub(r"[^a-z0-9]", "", value.casefold()) if isinstance(value, str) and len(value) <= 256 else ""
+    candidates = set()
+    for field in ("nickname", "custom_nickname"):
+        value = row.get(field)
+        if not isinstance(value, str) or len(value) > 256:
+            continue
+        candidates.add(name(value))
+        try:
+            candidates.add(name(base64.b64decode(value, validate=True).decode("utf-8")))
+        except (ValueError, UnicodeDecodeError):
+            pass
+    matches = set()
+    for room, names in bindings.items():
+        if not isinstance(room, str) or not re.fullmatch(r"r[1-9][0-9]?", room) or not isinstance(names, list) or len(names) > 8:
+            continue
+        if any(name(n) and name(n) in candidates for n in names):
+            matches.add(room)
+    return next(iter(matches)) if len(matches) == 1 else None
+
+
+def normalize(capture, salt, synthetic=False, room_bindings=None):
     """A deliberately narrow public contract. Unknown/missing is never absent."""
     if not isinstance(capture, dict) or not isinstance(capture.get("responses"), dict):
         raise BridgeError("Malformed capture")
@@ -401,8 +426,14 @@ def normalize(capture, salt, synthetic=False):
                                       "band5": number(signal.get("band5")), "scale": "unknown"}
                            if isinstance(signal, dict) else None,
                            "parent_id": parent if parent in known_ids and parent != identity else None,
+                           "room_id": configured_room(row, room_bindings) if endpoint == "devices" else None,
                            "is_main": row.get("role") == "master" if row.get("role") in ("master", "slave") else None,
                            "model": row.get("device_model") if row.get("device_model") in ("M5", "M4R", "M4", "E4R", "E4") else None})
+        # A duplicated room binding is unresolved, not two nodes at one anchor.
+        occupied = [x["room_id"] for x in output if x["room_id"] is not None]
+        for x in output:
+            if x["room_id"] is not None and occupied.count(x["room_id"]) > 1:
+                x["room_id"] = None
         return output
 
     return {"schema": "ruview.mesh.v0", "source": "deco_local",

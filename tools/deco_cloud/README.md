@@ -124,3 +124,15 @@ Worker observability/logpush are disabled. WebSocket subscribers are capped.
 Tests validate protocol boundaries and measured delivery. Actual Safari/cellular,
 long-run sleep/wake, full-app resource acceptance, and held-out motion detection
 remain open. The full Rust sensing/CSI/pose backend is not deployed here.
+
+## Owner-authored room map
+
+The private RuView Floor Plan tab displays a schematic configuration from
+GET /api/floorplan. Owner-only same-origin saves use expected_version and strict
+validation; stale revisions return409. Undo retains one previous plan. Layout
+configuration persists separately from telemetry TTL and is never RF-inferred.
+The native collector exports only an opaque room key matched using local private
+room_bindings. Private labels/notes are intentionally stored as authenticated
+owner configuration; photos/raw router names do not pass through telemetry.
+Keep seed JSON, source images and name bindings outside Git. See
+[playbook12](../../docs/integrations/deco/12-private-room-map.md).

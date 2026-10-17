@@ -32,6 +32,7 @@ export function cleanFrame(v,now=Date.now()) {
       down_raw:number(x.down_raw,0,1e12),up_raw:number(x.up_raw,0,1e12),
       signal_2g:number(x.signal_2g,0,100),signal_5g:number(x.signal_5g,0,100),
       parent_id:x.parent_id==null?null:id(x.parent_id),is_main:typeof x.is_main==='boolean'?x.is_main:null,
+      room_id:typeof x.room_id==='string'&&/^r[1-9][0-9]?$/.test(x.room_id)?x.room_id:null,
       model:['M5','M4R','M4','E4R','E4'].includes(x.model)?x.model:null}));
     if(new Set(result.map(x=>x.id)).size!==result.length)throw new Error('Duplicate aliases');return result;
   };

@@ -2,6 +2,42 @@
 
 
 
+
+## Latest continuation: private floor map deployed and accepted
+
+2026-10-17: playbook12 and E93–E99 describe the Floor Plan tab. Generic code is
+in floorplan.mjs/floorplan-ui.mjs/floorplan.css. Photos remain in the supplied local files. Private Application Support holds
+the seed, source manifest and bindings; authenticated cloud storage holds the
+derived layout/labels/notes. Household data never enters Git or the bundle.
+No raw images were uploaded. Geometry is schematic; segment measurements do not
+establish complete room boundaries. Remaining adjacency/doors/stairs/scale need
+owner clarification. Existing direct owner clarification updated an anchor in
+the private seed; no household details belong in this handoff.
+
+A local private name matcher adds opaque room keys to node telemetry. All8nodes
+matched distinct configured keys on the first real read. The new protected sweep
+and production --require-associations --require-floorplan passed:8rooms/8bound
+nodes/8filtered observations/10attributed clients, WebSocket40→41. Current Worker
+revision a7b2de178cf240a9a0f90223f3babd0a. Keep the working native app/publisher
+session running; no further sign-in/restart is needed for this feature.
+
+API plan GET requires a viewer. Save/undo require owner, exact Origin and expected
+revision; stale saves return409. SQLite keeps current/one previous config outside
+telemetry TTL. Current cloud revision2 is newer than initial private seed1;
+export current plan before editing, never blindly reseed. UI supports floor
+switches, room/anchor dragging, numeric bounds, notes, save/cancel/undo/download.
+Unknown/conflicting/pending/stale attachment data remains explicit. Room counts
+are last-reported devices, not people or exact physical positions.
+
+Focused105tests plus type/build/dry-run/audit/local auth/SQLite/browser field-save
+and undo checks pass. Actual production UI/screenshots cover both floors. The
+native app had already stopped on network_timeout before this slice; reviewed
+update/private backups plus one local owner login restored collection. Local
+fixture tab/server closed. Next: refine geometry, cross-check a device in stock
+Deco, and run a labelled roam trial measuring latency and false changes. No
+human-motion/pose/wall-scanning accuracy established. improvements is unchanged.
+
+
 ## Latest continuation: full attachment feed accepted
 
 2026-10-17: E90–E92 and playbook11 supersede the pending state below. Keep the

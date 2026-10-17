@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "deco_bridge"))
 from research_feed import private_config
 
 
-def check(config_path, require_associations=False):
+def check(config_path, require_associations=False, require_floorplan=False):
     cfg = private_config(config_path)
     u = urlsplit(cfg["origin"])
     if u.scheme != "https" or not (u.hostname or "").endswith(".workers.dev") or u.port or u.path or u.query or u.fragment:
@@ -40,6 +40,7 @@ def check(config_path, require_associations=False):
             c.close()
 
     assert request("GET", "/api/snapshot")[0] == 401
+    assert request("GET", "/api/floorplan")[0] == 401
     assert request("GET", "/")[0] == 303
     assert request("GET", "/health")[0] == 200
     assert request("GET", "/ruview/")[0] == 303
@@ -56,6 +57,16 @@ def check(config_path, require_associations=False):
     status, raw, _ = request("GET", "/api/snapshot", headers=session)
     assert status == 200
     value = json.loads(raw)
+    plan_status, plan_raw, _ = request("GET", "/api/floorplan", headers=session)
+    assert plan_status == 200
+    plan_state = json.loads(plan_raw)
+    rooms = (plan_state.get("plan") or {}).get("rooms", [])
+    bound = [n for n in value["latest"]["mesh"].get("nodes") or [] if n.get("room_id") in {r["id"] for r in rooms}]
+    if require_floorplan:
+        assert rooms and plan_state["plan"]["geometry"] == "schematic"
+        assert len(bound) == len(value["latest"]["mesh"]["nodes"]) > 0
+        assert len({n["room_id"] for n in bound}) == len(bound)
+    assert request("PUT", "/api/floorplan", "{}", {**session, "Content-Type": "application/json", "Origin": "https://wrong.example"})[0] == 403
     assert request("GET", "/association-ui.js", headers=session)[0] == 200
     association = value["latest"]["mesh"].get("associations")
     groups = association.get("node_observations", []) if association else []
@@ -131,6 +142,7 @@ def check(config_path, require_associations=False):
             s.sendall(bytes((0x88, 0x82)) + mask + bytes(x ^ mask[i % 4] for i, x in enumerate(b"\x03\xe8")))
     latest = second["latest"]
     summary = {"label": "MEASURED", "private_ruview_ui": True, "mapped_sensing": mapped["source_state"],
+               "rooms_configured": len(rooms), "nodes_with_room_binding": len(bound), "floorplan_required": require_floorplan,
                "association_nodes_observed": len(groups), "clients_attributed": sum(c["state"] == "last_observed" for c in records),
                "association_hardware_required": require_associations,
                "link_change_state": mapped["change"]["state"], "distinct_rf_samples": mapped["scalar"]["sample_count"],
@@ -149,5 +161,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", required=True)
     p.add_argument("--require-associations", action="store_true", help="Require a complete real node-filter sweep and at least one attributed client")
+    p.add_argument("--require-floorplan", action="store_true", help="Require an owner-authored schematic and unique room binding for every observed node")
     args = p.parse_args()
-    check(args.config, args.require_associations)
+    check(args.config, args.require_associations, args.require_floorplan)

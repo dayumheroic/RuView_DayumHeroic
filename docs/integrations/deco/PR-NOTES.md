@@ -2,6 +2,34 @@
 
 
 
+
+## Latest continuation: private floor map with live room bindings
+
+2026-10-17. [Playbook12](12-private-room-map.md) records the generic renderer,
+private configuration and validation. Owner-supplied household photos, notes,
+labels, name bindings and geometry stay outside Git. The private cloud stores
+owner-authored schematic configuration separately from source telemetry.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E93 | CLAIMED owner placement / MEASURED source inventory | Eleven explicitly supplied local images plus owner placement/adjacency clarifications; private source manifest | Two-floor/eight-zone schematic configured privately. Segments are approximate references, not complete wall polygons/areas. Only described adjacency is drawn; remaining doors/stairs/alignment/scale are provisional. Exact labels/geometry/photos not committed or embedded in Worker code; images not uploaded |
+| E94 | SYNTHETIC tests / MEASURED build | Python discovery, cloud npm test, existing mesh/ws tests, binding/types/build/dry-run/audit |62Python+20cloud Node+23existing Node pass. Explicit room binding/base64 display names, duplicate/missing mappings, data privacy/geometry bounds, stale/conflict/expiry/event times and pending-versus-empty coverage checked. Type/build/dry-run pass; audit zero reported vulnerabilities. Renderer-only pending-state fix added a test; no extra native restart |
+| E95 | SYNTHETIC isolated local integration | Temporary literal127.0.0.1 Worker/SQLite instance with test-only owner/viewer/publisher credentials; browser | Anonymous401, viewer save/undo403, cross-origin save403, owner save/read round-trip, stale revision409 and undo restoration pass. Browser field edit persisted and undo returned prior geometry. Local fixture never sent to production; test tab/server closed. One initial verification command used a wrong cwd-relative path and was corrected |
+| E96 | MEASURED deployment / private config | Reviewed multipart Worker upload, existing owner-authenticated plan API, private mode0600 seed/config files | Initial revision d907678d1db3451e84e882046cec6ff1; final a7b2de178cf240a9a0f90223f3babd0a, etag a07f0f45e0804b6f68555a8fc1908a4f38809076584fba02a866e0ccf6dc4f61, migrationv1 unchanged. Additive SQLite configuration table/current+previous plan. Early post-upload plan-read assertion failed; a later diagnostic read returned200/empty revision0, then private seed saved revision1. Exact initial failure cause not captured; no bypass or repeated write. Current cloud revision2 preserved |
+| E97 | MEASURED native installation / room source | Existing normalized loopback snapshot, private backups and installed-source comparison; owner local sign-in | Collector had already failed read_devices/network_timeout before update. Owned native/publisher restart loaded local name-to-opaque-room bindings with pin/key/target retained. All8records matched distinct room keys on first read; full sweep completed with8nodes/11clients/10attributed/0ambiguous at that observation. Names are matched locally, room keys alone are added to telemetry. Password remains memory-only |
+| E98 | MEASURED production gate | check_deployment.py --require-associations --require-floorplan | PASS8configured rooms/8bound nodes/8node observations/10attributed clients, WebSocket40→41 update,20RF samples, RSSI−52/noise−88dBm,4probes. Anonymous/cross-origin denial, secure cookie, publisher/viewer isolation and private original UI/plan routes pass. CSI/human_presence/pose/vitals remain false |
+| E99 | MEASURED hosted UI | Actual authenticated Floor Plan tab, first/second-floor switching and owner controls; private screenshots | Live8/8reads,0unassigned nodes, schematic revision2, room counts, per-node ages and room-labelled client table render on both floors. Configured name mismatches are retained. Source screenshots are mode0600 outside Git; displayed room placement remains owner-authored approximate geometry. No controlled roam, wall reconstruction or physical room accuracy claim |
+
+No router form, polling interval, RF acquisition rate, firmware, radio mode,
+privileged capture, viewer population or permission scope changed. Opaque room
+keys survive collector restarts through private name bindings; device aliases
+still reset. Current/previous layout persists separately from telemetry TTL and
+is readable only to existing app viewers; editing requires owner plus Origin and
+revision checks. Private labels/notes are intentionally stored as user config,
+not forwarded from raw router responses. Next: refine missing geometry and run
+labelled device-roam calibration. The local fixture service has been stopped.
+
+
 ## Latest continuation: protected attachment feed verified
 
 2026-10-17. The owner's local sign-in enabled a full real sweep and cloud

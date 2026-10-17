@@ -8,6 +8,7 @@ import CLIENT from './client.js.txt';
 import {RUVIEW_HTML,RUVIEW_CSS,RUVIEW_JS,RUVIEW_NOTICES} from './ruview-assets.generated.mjs';
 import {bridgeSensing} from '../../ui/services/deco-sensing.mjs';
 import ASSOCIATION_UI from './association-assets.generated.mjs';
+import {cleanFloorplan} from './floorplan.mjs';
 const TTL=15*60*1000;
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer',
   'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
@@ -44,7 +45,17 @@ export class HomeFeed extends DurableObject {
     this.sql.exec('CREATE TABLE IF NOT EXISTS latest (id INTEGER PRIMARY KEY, value TEXT, received REAL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS samples (observed TEXT PRIMARY KEY, time REAL, rssi REAL, noise REAL, label TEXT)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS label (id INTEGER PRIMARY KEY, value TEXT, time REAL)');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS floorplan (id INTEGER PRIMARY KEY, version INTEGER, value TEXT, previous TEXT, updated REAL)');
   }
+  floorplan(){const row=this.sql.exec('SELECT version,value,previous,updated FROM floorplan WHERE id=1').toArray()[0];return row?{version:row.version,plan:JSON.parse(row.value),can_undo:!!row.previous,updated_at:new Date(row.updated).toISOString()}:{version:0,plan:null,can_undo:false,updated_at:null};}
+  saveFloorplan(plan,expected){
+    if(!Number.isSafeInteger(expected)||expected<0)throw Error('Plan revision');
+    const clean=cleanFloorplan(plan),old=this.sql.exec('SELECT version,value FROM floorplan WHERE id=1').toArray()[0];
+    if((old?.version||0)!==expected)return {conflict:true};
+    this.sql.exec('INSERT OR REPLACE INTO floorplan VALUES(1,?,?,?,?)',expected+1,JSON.stringify(clean),old?.value||null,Date.now());
+    return {version:expected+1};
+  }
+  undoFloorplan(expected){const old=this.sql.exec('SELECT previous FROM floorplan WHERE id=1').toArray()[0];if(!old?.previous)throw Error('No prior plan');return this.saveFloorplan(JSON.parse(old.previous),expected);}
   currentLabel(){return this.sql.exec('SELECT value,time FROM label WHERE id=1').toArray()[0]||null;}
   snapshot(){
     const now=Date.now();const latest=this.sql.exec('SELECT value,received FROM latest WHERE id=1').toArray()[0];
@@ -115,6 +126,17 @@ async fetch(request,env){
     const viewer=await authenticate(request,env);
     if(!viewer)return request.method==='GET'&&['/','/ruview','/ruview/'].includes(p)?reply('',303,{Location:'/login'}):reply({error:'Viewer authentication required'},401);
     const feed=env.FEEDS.getByName('home');
+    if(request.method==='GET'&&p==='/api/floorplan')return reply({...await feed.floorplan(),can_edit:viewer.role==='owner'});
+    if(['PUT','POST'].includes(request.method)&&['/api/floorplan','/api/floorplan/undo'].includes(p)){
+      if(!sameOrigin(request)||viewer.role!=='owner')return reply({error:'Owner origin required'},403);
+      if(request.method==='PUT'&&p==='/api/floorplan'){
+        const v=await boundedJSON(request,32768),result=await feed.saveFloorplan(cleanFloorplan(v.plan),v.expected_version);return reply(result,result.conflict?409:200);
+      }
+      if(request.method==='POST'&&p==='/api/floorplan/undo'){
+        const v=await boundedJSON(request,128),result=await feed.undoFloorplan(v.expected_version);return reply(result,result.conflict?409:200);
+      }
+      return reply({error:'Method not supported'},405);
+    }
     if(request.method==='GET'&&p==='/')return reply(DASHBOARD);
     if(request.method==='GET'&&p==='/ruview')return reply('',303,{Location:'/ruview/'});
     if(request.method==='GET'&&p==='/ruview/')return reply(RUVIEW_HTML,200,{'Content-Security-Policy':headers['Content-Security-Policy'].replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")+"; img-src 'self' data:"});

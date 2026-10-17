@@ -4,6 +4,7 @@ import {SensingTab} from '../../ui/components/SensingTab.js';
 import {PoseRenderer} from '../../ui/utils/pose-renderer.js';
 import {bridgeSensing,INPUT_MAP} from '../../ui/services/deco-sensing.mjs';
 import {renderAssociations} from './association-ui.mjs';
+import {FloorplanUI} from './floorplan-ui.mjs';
 
 const $=id=>document.getElementById(id);
 const fmt=(x,n=2)=>Number.isFinite(x)?x.toFixed(n):'unknown';
@@ -53,6 +54,7 @@ $('hardware').innerHTML=`<h2>Hardware · observed capabilities</h2><p id="hardwa
 $('demo').innerHTML=`<h2>Live Demo · tracking inputs</h2><p>The existing RuView pose renderer is installed below. It has no validated pose frames from this source, so it stays empty. Unknown presence is not zero people.</p><canvas id="bridge-pose" width="800" height="360" aria-label="RuView pose canvas: no validated pose data"></canvas><p>Required next: suitable high-rate RF observations, calibrated sensing/inference and pose keypoints with confidence. Device traffic and RSSI scalars alone do not identify limb positions.</p><h3>Mapped live data</h3><p>CSI features remain null. Derived RSSI statistics use separate names and units.</p><pre id="mapped-json">Waiting</pre>`;
 const pose=new PoseRenderer($('bridge-pose'),{showZones:false,showDebugInfo:false});pose.clearCanvas();pose.renderNoDataMessage();
 const attachments=document.createElement('section');attachments.innerHTML='<h2>Devices and Deco attachments</h2><div id="ruview-attachments"></div>';$('hardware').append(attachments);
+const floorplan=new FloorplanUI($('floorplan'));
 const tabs=new TabManager(document.querySelector('.container'));tabs.init();
 const feed=new CloudFeed();
 const sensing=new SensingTab($('sensing'),{service:feed,telemetry:true,three:THREE});
@@ -61,6 +63,7 @@ feed.onData(v=>{
   $('summary-rf').textContent=v.source_state==='live'?`${fmt(v.scalar.rssi_dbm,0)} dBm`:'Unavailable / stale';
   $('summary-source').textContent=`CoreWLAN observation ${v.observed_at?new Date(v.observed_at).toLocaleTimeString():'unknown'} · ${v.scalar.sample_count} distinct samples`;
   const meshLive=v.mesh?.source_state==='live_unverified'&&Date.now()-Date.parse(v.mesh.observed_at)<=90000&&Date.now()-Date.parse(feed.snapshot?.received_at)<20000;
+  floorplan.update(v.mesh?{...v.mesh,source_state:meshLive?'live_unverified':'stale'}:null);
   renderAssociations($('ruview-attachments'),v.mesh?{...v.mesh,source_state:meshLive?'live_unverified':'stale'}:null);
   $('summary-mesh').textContent=`${v.mesh?.nodes?.length??'unknown'} nodes · ${v.mesh?.clients?.length??'unknown'} clients${meshLive?'':' · stale / unavailable'}`;
   $('summary-change').textContent=v.change.state.replaceAll('_',' ');
@@ -77,5 +80,5 @@ try{await sensing.init();}catch{
 }
 tabs.switchToTab('sensing');
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){feed.sync();feed.connect();}});
-window.addEventListener('pagehide',()=>{sensing.dispose();feed.stop();},{once:true});
+window.addEventListener('pagehide',()=>{sensing.dispose();feed.stop();floorplan.dispose();},{once:true});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});

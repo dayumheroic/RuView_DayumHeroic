@@ -206,7 +206,7 @@ class State:
                     if self.mesh_stop.wait(0.25):
                         return
                 stage = "response_schema"
-                value = normalize(capture, self.salt)
+                value = normalize(capture, self.salt, room_bindings=self.config.get("room_bindings"))
                 # Missing lists must not count as a successful hardware schema validation.
                 if value["nodes"] is None or value["clients"] is None:
                     raise BridgeError("Unsupported protected response schema")

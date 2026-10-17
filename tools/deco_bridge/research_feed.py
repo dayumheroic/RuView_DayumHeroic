@@ -123,6 +123,7 @@ def projection(value, collection, sequence, probes):
             result.append({"id": item["id"], "online": item.get("online") if type(item.get("online")) is bool else None,
                            "parent_id": item.get("parent_id") if isinstance(item.get("parent_id"), str) and re.fullmatch(r"[a-f0-9]{24}", item["parent_id"]) else None,
                            "is_main": item.get("is_main") if type(item.get("is_main")) is bool else None,
+                           "room_id": item.get("room_id") if isinstance(item.get("room_id"), str) and re.fullmatch(r"r[1-9][0-9]?", item["room_id"]) else None,
                            "model": item.get("model") if item.get("model") in ("M5", "M4R", "M4", "E4R", "E4") else None,
                            "signal_2g": numeric(signal.get("band2_4"), 0, 100), "signal_5g": numeric(signal.get("band5"), 0, 100),
                            "down_raw": numeric(rates.get("down_raw"), 0, 1e12), "up_raw": numeric(rates.get("up_raw"), 0, 1e12)})
