@@ -187,6 +187,20 @@ The resumed update adds safe reason categories to make another authentication
 failure diagnosable. Existing stage-only evidence cannot be reconstructed into
 a detailed error. No credentials/session memory were inspected or recovered.
 
+### Intermittent read continuation
+
+| ID | Label | Reproducer/source | Expected / actual / limit |
+|---|---|---|---|
+| E57 | CLAIMED success / MEASURED later failure | Owner's report and subsequent screenshot; authenticated local snapshot | Owner reports a brief device list with data, without a saved successful screenshot. Later snapshot shows read_devices + transport_or_decode, after login returned successfully. No complete schema/count fixture is available from that earlier success, and the old combined category does not distinguish timeout/TLS/HTTP/JSON |
+| E58 | SYNTHETIC transport/recovery tests | Focused Python unittest and Node mesh-client tests |45 Python +10 Node tests pass. New transport categories distinguish timeout/JSON without upstream text; timeout input is bounded1..30. Each transient read gets at most one delayed retry in the same session with one login total. Explicit router rejection never retries; pause cancels retry. Prior successful records stay Stale and missing lists remain unknown. Hardware recovery under this policy is still pending |
+| E59 | MEASURED pinned source inspection | Previously reviewed HA source: const.py, api.py | Its timeout default is30seconds and timeout retry default1. App timeout changed from6 to30seconds; CLI retains6. This is a design reference, not proof that6seconds caused the owner's failures. No third-party package was executed |
+
+No extra owner login or network sweep is performed by the new retry mechanism.
+Only the same fixed idempotent status read is retried after30seconds; after a
+second failure collection stops. Updated UI displays retained records as last
+observed/Stale rather than erasing them or presenting them as fresh. Reset and
+app exit still discard the in-memory session; credentials are not persisted.
+
 ## Initial documentation-phase validation (historical)
 
 Performance continuation validation: four staged documents, twelve Markdown

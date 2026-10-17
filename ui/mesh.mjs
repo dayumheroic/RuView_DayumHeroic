@@ -1,4 +1,4 @@
-import {MeshClient, sourceLabel} from './mesh-client.mjs';
+import {MeshClient, sourceLabel, meshView} from './mesh-client.mjs';
 const $ = id => document.getElementById(id);
 const bootstrap = document.querySelector('meta[name="bridge-bootstrap"]');
 const initialKey = bootstrap?.content || '';
@@ -20,7 +20,12 @@ const failureReasons = {
   session_token:'Login did not return a supported session token.',
   response_schema:'The device/client response structure is unsupported.',
   response_size:'The router response exceeded the size limit.',
-  request_failed:'The operation failed; no automatic retry was attempted.'
+  request_failed:'The operation failed and collection stopped.',
+  network_timeout:'The router request timed out.',
+  tls_failed:'TLS negotiation or a TLS record failed.',
+  response_decode:'The router response was not valid JSON.',
+  http_protocol:'The HTTP connection or response protocol failed.',
+  network_failed:'The network connection failed.'
 };
 function field(id, value, unit = '') { $(id).textContent = Number.isFinite(value) ? `${value}${unit}` : '—'; }
 function badge(id, state) { $(id).textContent = sourceLabel(state); $(id).dataset.state = state; }
@@ -38,7 +43,9 @@ function clearReadings(message) {
 }
 function render(value) {
   const {radio, mesh} = value;
-  const phase = value.connection === 'failed' && failureStages[value.failure_stage]
+  const phase = value.connection === 'retry_wait'
+    ? `Status read interrupted. Retrying once in ${value.read_retry_after_seconds ?? 30} seconds using the same session.`
+    : value.connection === 'failed' && failureStages[value.failure_stage]
     ? `Deco stopped during ${failureStages[value.failure_stage]}. ${failureReasons[value.failure_reason] || ''} Use Reconnect Deco to sign in again.`
     : (phases[value.connection] || 'Disconnected');
   $('connection').textContent = phase;
@@ -57,12 +64,15 @@ function render(value) {
   // Draw only the segment after the latest gap; never interpolate an outage.
   const start = history.lastIndexOf(null) + 1;
   $('signal-line').setAttribute('points', history.slice(start).map((x,i) => `${(start+i)*600/59},${120-(Math.max(-100,Math.min(-20,x))+100)*120/80}`).join(' '));
-  const meshCurrent = mesh.source_state === 'live_unverified';
-  field('node-count', meshCurrent && Array.isArray(mesh.nodes) ? mesh.nodes.length : null);
-  field('client-count', meshCurrent && Array.isArray(mesh.clients) ? mesh.clients.length : null);
-  $('mesh-message').textContent = meshCurrent ? 'Counts describe API records, not people. Units and firmware schema remain unverified.' : phase;
+  const view = meshView(mesh);
+  field('node-count', view.nodeCount);
+  field('client-count', view.clientCount);
+  $('node-label').textContent = view.stale ? 'mesh nodes · last observed' : 'mesh nodes';
+  $('client-label').textContent = view.stale ? 'client records · last observed' : 'client records';
+  $('mesh-message').textContent = view.stale ? `Showing the last successful observation. ${phase}`
+    : view.readable ? 'Counts describe API records, not people. Units and firmware schema remain unverified.' : phase;
   $('mesh-age').textContent = mesh.observed_at ? `Last API capture: ${mesh.observed_at} · ${Math.floor(mesh.age_seconds)} seconds ago` : 'No API capture yet';
-  $('pause').disabled = !['connecting','connected'].includes(value.connection);
+  $('pause').disabled = !['connecting','connected','retry_wait'].includes(value.connection);
   const recovering = ['failed','paused'].includes(value.connection);
   $('pause').hidden = recovering;
   $('reconnect').hidden = !recovering;
@@ -75,9 +85,10 @@ function render(value) {
   $('signin-panel').hidden = value.sign_in_attempted || value.connection !== 'setup_required';
   $('deco-target').textContent = value.target?.host || '—';
   $('deco-pin').textContent = value.target?.certificate_sha256 || '—';
-  $('clients-panel').hidden = !meshCurrent || !Array.isArray(mesh.clients);
+  $('clients-panel').hidden = !view.readable || !Array.isArray(mesh.clients);
+  $('clients-title').textContent = view.stale ? 'Last observed device records · stale' : 'Device records';
   $('clients').replaceChildren();
-  if (meshCurrent && Array.isArray(mesh.clients)) for (const row of mesh.clients) {
+  if (view.readable && Array.isArray(mesh.clients)) for (const row of mesh.clients) {
     const tr = document.createElement('tr');
     for (const text of [typeof row.id === 'string' ? row.id.slice(0,12) : 'Unknown',
       row.online === true ? 'Yes' : row.online === false ? 'No' : 'Unknown',

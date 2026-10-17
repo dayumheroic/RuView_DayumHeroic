@@ -238,6 +238,31 @@ class Boundaries(unittest.TestCase):
             with self.assertRaises(bridge.BridgeError):
                 bridge.private_directory(target)
 
+    def test_timeout_is_distinct_and_never_exposes_exception_text(self):
+        conn = self.mock_connection()
+        conn.connect.side_effect = TimeoutError("PRIVATE-TOKEN-SENTINEL")
+        with patch.object(bridge.http.client, "HTTPSConnection", return_value=conn):
+            with self.assertRaises(bridge.BridgeError) as caught:
+                bridge.Transport("192.168.0.1", "0" * 64).post("/", b"{}")
+        self.assertEqual(str(caught.exception), "Network request timed out")
+        conn.request.assert_not_called()
+
+    def test_timeout_is_bounded_and_reaches_the_tls_connection(self):
+        for timeout in (0, 31, -1, True, float("inf")):
+            with self.assertRaises(bridge.BridgeError):
+                bridge.Transport("192.168.0.1", "0" * 64, timeout=timeout)
+        conn = self.mock_connection()
+        with patch.object(bridge.http.client, "HTTPSConnection", return_value=conn) as connect:
+            bridge.Transport("192.168.0.1", hashlib.sha256(b"synthetic-certificate").hexdigest(), timeout=30).post("/", b"{}")
+        self.assertEqual(connect.call_args.kwargs["timeout"], 30)
+
+    def test_json_failure_is_distinct_without_body_or_session_url(self):
+        conn = self.mock_connection(body=b"PRIVATE-HTML-TOKEN-SENTINEL")
+        with patch.object(bridge.http.client, "HTTPSConnection", return_value=conn):
+            with self.assertRaises(bridge.BridgeError) as caught:
+                bridge.Transport("192.168.0.1", hashlib.sha256(b"synthetic-certificate").hexdigest()).post("/", b"{}")
+        self.assertEqual(str(caught.exception), "Router response was not valid JSON")
+
     def test_public_directory_rejected_without_chmod(self):
         with tempfile.TemporaryDirectory() as parent:
             os.chmod(parent, 0o755)

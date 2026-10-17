@@ -11,6 +11,14 @@ export function sourceLabel(state) {
   return ({live_unverified: 'Live · unverified', stale: 'Stale', disconnected: 'Disconnected', synthetic: 'Synthetic'})[state] || 'Disconnected';
 }
 
+export function meshView(mesh) {
+  const stale = mesh?.source_state === 'stale';
+  const readable = mesh?.source_state === 'live_unverified' || stale;
+  return {stale, readable,
+    nodeCount: readable && Array.isArray(mesh.nodes) ? mesh.nodes.length : null,
+    clientCount: readable && Array.isArray(mesh.clients) ? mesh.clients.length : null};
+}
+
 export class MeshClient {
   constructor(url, key, fetcher = globalThis.fetch.bind(globalThis)) {
     this.url = bridgeURL(url);

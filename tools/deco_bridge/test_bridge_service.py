@@ -143,6 +143,79 @@ class StateTests(unittest.TestCase):
         self.assertEqual(calls, ["devices", "clients"])
         self.assertEqual(self.state.snapshot()["mesh"]["nodes"], [])
 
+    def test_transient_read_retry_uses_same_session_and_no_second_login(self):
+        calls, waiting = [], []
+        class Firmware:
+            def login(self, _password): calls.append("login")
+            def read(self, name):
+                calls.append(name)
+                if name == "devices" and calls.count("devices") == 1:
+                    raise BridgeError("Network request timed out")
+                return {"device_list": []} if name == "devices" else {"client_list": []}
+        def wait(_seconds):
+            if self.state.phase == "retry_wait": waiting.append(self.state.snapshot())
+            return self.state.phase == "connected"
+        self.state.factory = Firmware
+        with patch.object(self.state.mesh_stop, "wait", side_effect=wait):
+            self.state.connect("synthetic-password", True)
+            self.state.mesh_worker.join(2)
+        self.assertEqual(calls, ["login", "devices", "devices", "clients"])
+        self.assertEqual(self.state.phase, "connected")
+        self.assertEqual(len(waiting), 1)
+        self.assertEqual(waiting[0]["connection"], "retry_wait")
+        self.assertGreaterEqual(waiting[0]["read_retry_after_seconds"], 29)
+        self.assertIsNone(self.state.snapshot()["read_retry_after_seconds"])
+
+    def test_transient_read_retry_is_bounded_and_retains_stale_snapshot(self):
+        calls = []
+        class Firmware:
+            def login(self, _password): calls.append("login")
+            def read(self, name):
+                calls.append(name)
+                raise BridgeError("Network connection failed")
+        self.state.mesh = {"source_state": "live_unverified", "nodes": [], "clients": [{"id":"synthetic"}]}
+        self.state.mesh_time, self.state.mesh_wall = time.monotonic(), time.time()
+        self.state.factory = Firmware
+        with patch.object(self.state.mesh_stop, "wait", return_value=False):
+            self.state.connect("synthetic-password", True)
+            self.state.mesh_worker.join(2)
+        self.assertEqual(calls, ["login", "devices", "devices"])
+        value = self.state.snapshot()
+        self.assertEqual(value["failure_reason"], "network_failed")
+        self.assertEqual(value["mesh"]["source_state"], "stale")
+        self.assertEqual(len(value["mesh"]["clients"]), 1)
+
+    def test_router_rejection_does_not_retry_a_read_or_login(self):
+        calls = []
+        class Firmware:
+            def login(self, _password): calls.append("login")
+            def read(self, name):
+                calls.append(name)
+                raise BridgeError("Router rejected request; stopped without automatic retry")
+        self.state.factory = Firmware
+        self.state.connect("synthetic-password", True)
+        self.state.mesh_worker.join(2)
+        self.assertEqual(calls, ["login", "devices"])
+        self.assertEqual(self.state.snapshot()["failure_reason"], "router_rejected")
+
+    def test_pause_cancels_delayed_retry(self):
+        calls = []
+        class Firmware:
+            def login(self, _password): calls.append("login")
+            def read(self, name):
+                calls.append(name)
+                raise BridgeError("Network request timed out")
+        def wait(_seconds):
+            self.state.pause()
+            return True
+        self.state.factory = Firmware
+        with patch.object(self.state.mesh_stop, "wait", side_effect=wait):
+            self.state.connect("synthetic-password", True)
+            self.state.mesh_worker.join(2)
+        self.assertEqual(calls, ["login", "devices"])
+        self.assertEqual(self.state.phase, "paused")
+        self.assertIsNone(self.state.snapshot()["read_retry_after_seconds"])
+
     def test_explicit_reset_has_cooldown_and_does_not_log_in(self):
         calls = []
         class Broken:

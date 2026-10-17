@@ -26,7 +26,7 @@
         <p class="caption">Link rate describes the Mac’s Wi-Fi connection; it is not an internet speed test.</p>
       </section>
       <section class="panel"><div class="section-heading"><h2>Deco telemetry</h2><span id="mesh-state" class="pill">Disconnected</span></div><p class="caption">Owner-authenticated · fixed read operations · 30-second polling</p>
-        <div class="counts"><div><strong id="node-count">—</strong><span>mesh nodes</span></div><div><strong id="client-count">—</strong><span>client records</span></div></div>
+        <div class="counts"><div><strong id="node-count">—</strong><span id="node-label">mesh nodes</span></div><div><strong id="client-count">—</strong><span id="client-label">client records</span></div></div>
         <p id="mesh-message">Waiting for the local bridge.</p><p id="mesh-age" class="caption">No API capture yet</p>
         <button id="pause" type="button" class="secondary" disabled>Pause Deco reads</button>
         <button id="reconnect" type="button" hidden>Reconnect Deco</button>
@@ -43,7 +43,7 @@
       </form>
       <p class="caption">A rejected login stops collection. Use Reconnect Deco to return here after the 30-second sign-in cooldown. No automatic password retries or saved owner password.</p>
     </section>
-    <section class="panel" id="clients-panel" hidden><div class="section-heading"><h2>Device records</h2><span class="pill">SESSION ALIASES</span></div><p class="caption">Aliases change when collection restarts. Rate units have not yet been checked against this firmware’s UI.</p><div class="table-scroll"><table><thead><tr><th>Device alias</th><th>Online field</th><th>Download · raw</th><th>Upload · raw</th></tr></thead><tbody id="clients"></tbody></table></div></section>
+    <section class="panel" id="clients-panel" hidden><div class="section-heading"><h2 id="clients-title">Device records</h2><span class="pill">SESSION ALIASES</span></div><p class="caption">Aliases change when collection restarts. Rate units have not yet been checked against this firmware’s UI.</p><div class="table-scroll"><table><thead><tr><th>Device alias</th><th>Online field at observation</th><th>Download · raw</th><th>Upload · raw</th></tr></thead><tbody id="clients"></tbody></table></div></section>
     <section class="boundary"><span class="boundary-icon">i</span><div><strong>Telemetry has a defined boundary.</strong><p>This bridge supplies network records and scalar radio measurements. Complex CSI, human presence, breathing, heart rate and body pose are unavailable from these inputs.</p></div></section>
     <footer><span>RuView companion · research preview</span><span>No flashing · no router configuration writes</span></footer>
   </main>

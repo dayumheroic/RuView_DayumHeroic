@@ -96,6 +96,13 @@ After the desktop restart a newer attempt failed at authentication; the old
 stage-only result cannot identify its cause. The unauthenticated pinned probe
 still passes. The app now exposes fixed failure_reason categories with no
 upstream exception text, so inspect stage/reason together on the next attempt.
+The next inspected attempt passed login and failed at device-list read with
+transport_or_decode. The owner reports briefly seeing device records earlier,
+but no successful capture/screenshot was retained. Preserve that distinction.
+The app now allows a 30-second request timeout and one delayed transient-read
+retry using the same session; no automatic login retry. Last successful records
+remain visible as Stale/last observed, so inspect their capture time before
+claiming current presence. CLI transport default remains six seconds.
 
 Mesh/device telemetry belongs in a separate surface. Existing sensing outputs
 and MQTT publication are not generic Deco inputs. A native provider needs an

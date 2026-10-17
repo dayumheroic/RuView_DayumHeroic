@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {bridgeURL, MeshClient, sourceLabel} from '../../ui/mesh-client.mjs';
+import {bridgeURL, MeshClient, sourceLabel, meshView} from '../../ui/mesh-client.mjs';
 test('only explicit loopback origins without URL secrets', () => {
   for (const url of ['https://example.org', 'http://127.0.0.1:8080/?key=secret', 'http://user@localhost:8080', 'http://localhost', 'http://localhost:80', 'http://localhost:8080/path']) assert.throws(() => bridgeURL(url));
   assert.equal(bridgeURL('http://127.0.0.1:8766'), 'http://127.0.0.1:8766');
@@ -46,4 +46,18 @@ test('explicit reconnect uses only the local reset endpoint', async () => {
   assert.equal(call[0], 'http://localhost:8766/v1/deco/reset');
   assert.equal(call[1].method, 'POST');
   assert.equal(call[1].body, '{}');
+});
+test('last successful stale records remain visible with stale state', () => {
+  assert.deepEqual(meshView({source_state:'stale',nodes:[{}],clients:[{},{}]}),
+    {stale:true,readable:true,nodeCount:1,clientCount:2});
+});
+test('disconnected and synthetic records cannot masquerade as current counts', () => {
+  for (const state of ['disconnected','synthetic','unknown']) {
+    const view = meshView({source_state:state,nodes:[],clients:[{}]});
+    assert.equal(view.readable,false); assert.equal(view.nodeCount,null); assert.equal(view.clientCount,null);
+  }
+});
+test('missing stale lists remain unknown rather than zero', () => {
+  const view = meshView({source_state:'stale',nodes:null,clients:null});
+  assert.equal(view.stale,true); assert.equal(view.nodeCount,null); assert.equal(view.clientCount,null);
 });

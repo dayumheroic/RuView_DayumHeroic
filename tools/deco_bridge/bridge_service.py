@@ -35,7 +35,13 @@ FAILURE_REASONS = {
     "Login did not return a supported session token": "session_token",
     "Unsupported protected response schema": "response_schema",
     "Router response exceeded size limit": "response_size",
+    "Network request timed out": "network_timeout",
+    "TLS negotiation or record failure": "tls_failed",
+    "Router response was not valid JSON": "response_decode",
+    "HTTP protocol or connection failure": "http_protocol",
+    "Network connection failed": "network_failed",
 }
+TRANSIENT_READ_FAILURES = {"network_timeout", "tls_failed", "response_decode", "http_protocol", "network_failed"}
 ASSETS = {"/": ("mesh.html", "text/html; charset=utf-8"),
           "/mesh.html": ("mesh.html", "text/html; charset=utf-8"),
           "/mesh.css": ("mesh.css", "text/css; charset=utf-8"),
@@ -108,7 +114,7 @@ def radio_read(helper):
 class State:
     def __init__(self, config, helper, session_factory=None):
         self.config, self.helper = config, helper
-        self.factory = session_factory or (lambda: Session(Transport(config["host"], config["pin"])))
+        self.factory = session_factory or (lambda: Session(Transport(config["host"], config["pin"], timeout=30)))
         self.lock = threading.Lock()
         self.stop = threading.Event()
         self.mesh_stop = threading.Event()
@@ -124,6 +130,7 @@ class State:
         self.attempted = False
         self.last_attempt = None
         self.mesh_worker = None
+        self.read_retry_deadline = None
         self.workers = []
 
     def start_radio(self):
@@ -173,7 +180,28 @@ class State:
                     if self.stop.is_set() or self.mesh_stop.is_set():
                         return
                     stage = "read_" + name
-                    capture["responses"][name] = session.read(name)
+                    for attempt in range(2):
+                        try:
+                            capture["responses"][name] = session.read(name)
+                            break
+                        except BridgeError as error:
+                            reason = FAILURE_REASONS.get(str(error))
+                            if attempt != 0 or reason not in TRANSIENT_READ_FAILURES:
+                                raise
+                            # Status reads are idempotent. Keep the same in-memory
+                            # session for one delayed retry; never call login again.
+                            with self.lock:
+                                if self.stop.is_set() or self.mesh_stop.is_set():
+                                    return
+                                self.phase = "retry_wait"
+                                self.read_retry_deadline = time.monotonic() + 30
+                            if self.mesh_stop.wait(30) or self.stop.is_set():
+                                return
+                            with self.lock:
+                                self.read_retry_deadline = None
+                                if self.mesh_stop.is_set():
+                                    return
+                                self.phase = "connecting"
                     if self.mesh_stop.wait(0.25):
                         return
                 stage = "response_schema"
@@ -197,11 +225,14 @@ class State:
                     self.failure_reason = FAILURE_REASONS.get(str(error), "request_failed") if isinstance(error, BridgeError) else "request_failed"
         finally:
             password = session = None
+            with self.lock:
+                self.read_retry_deadline = None
 
     def pause(self):
         self.mesh_stop.set()
         with self.lock:
             self.phase = "paused"
+            self.read_retry_deadline = None
             # Drop aliases/measurements from the API immediately. An in-flight read may finish.
             self.mesh, self.mesh_time, self.mesh_wall = None, None, None
 
@@ -257,6 +288,7 @@ class State:
                     "failure_stage": self.failure_stage,
                     "failure_reason": self.failure_reason,
                     "recovery": self.recovery(),
+                    "read_retry_after_seconds": max(0, math.ceil(self.read_retry_deadline - now)) if self.read_retry_deadline is not None else None,
                     "target": {"host": self.config["host"], "certificate_sha256": self.config["pin"]},
                     "sign_in_attempted": self.attempted}
 

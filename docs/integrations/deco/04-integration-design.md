@@ -15,7 +15,10 @@ Protected Deco schema/units still need real owner-authenticated acceptance.
 Credentials stay in memory; no Keychain implementation or automatic auth retry.
 RF stale policy is 15 seconds; mesh is 90 seconds or a later failure. Poll mesh
 30 seconds after each successful batch. Retained stale records never populate
-current counts. Pausing drops mesh data; explicit Reconnect Deco restores sign-in
+current counts. Last successful stale records are shown as last observed, with
+their capture time. One transient status read can retry after 30 seconds using
+the same session; router rejection/login failures never trigger an automatic
+credential retry. Pausing drops mesh data; explicit Reconnect Deco restores sign-in
 after worker exit and a 30-second sign-in cooldown. The dashboard polls only
 device/client lists, so unused performance/mode reads cannot discard its data.
 

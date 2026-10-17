@@ -67,9 +67,14 @@ or any later collection failure. Elapsed wall and monotonic time cover sleep
 and clock changes; a backward clock step fails freshness closed until the next
 sample. These transitions are tested synthetically; real sleep/wake is pending.
 All real samples remain `live_unverified`; no attestation or calibrated sensing
-claim. No automatic owner-login retry or reconnect after a protected read/schema
-error. Connection phases are `setup_required`, `connecting`, `connected`,
-`failed` and `paused`, separate from ADR-295 source states.
+claim. Each transient network/TLS/HTTP/JSON status-read failure permits one
+additional attempt after 30 seconds using the existing in-memory session.
+There is no automatic owner-login retry, no retry for explicit router rejection,
+and no further attempt after the retry budget is exhausted. Pause cancels the
+wait. Connection phases include `retry_wait` alongside `setup_required`,
+`connecting`, `connected`, `failed` and `paused`, separate from source states.
+Last successful records remain visible with a Stale badge, last-observed labels
+and capture timestamp. Missing records are never substituted with zero.
 Failure diagnostics expose a fixed stage and a fixed reason category (pin,
 transport/decoding, HTTP, router rejection, encryption or schema), never router
 error text or session URLs. An authentication-stage failure alone does not
@@ -77,8 +82,9 @@ establish that the password was wrong. Unknown exceptions become request_failed.
 
 The API uses one HTTP request handler at a time, three-second local socket
 timeouts and 4 KiB mutation bodies. Separate RF and mesh workers keep sampling
-out of the HTTP handler. Router reads retain the collector's 1 MiB limit and
-six-second inactivity timeout (not an absolute whole-response deadline). A
+out of the HTTP handler. Router reads retain the collector's 1 MiB limit. The
+app allows 30 seconds of socket inactivity per request; the research CLI keeps
+its six-second default. Neither is an absolute whole-response deadline. A
 complete device/client schema is required before publishing a mesh batch.
 API rates retain unknown units, aliases are per-collection-session HMACs, and RF has no
 SSID/BSSID. No raw protected payload is retained by the service. Use the
@@ -94,6 +100,14 @@ performance failure's underlying router/transport cause is not established.
 The CLI retains its separate four-form research batch and private partial output.
 Authentication/read-return success does not establish normalized schema or units;
 full hardware acceptance still needs a successful dashboard snapshot.
+The owner later reported a brief device-list success without a screenshot;
+this is user-reported evidence, not a captured schema witness. A subsequent
+screenshot/API snapshot failed at device-list read with the old combined
+transport/decode category. New errors distinguish timeout, TLS, HTTP, JSON and
+connection failures, and the app now retries one transient read before requiring
+explicit recovery. The inspected pinned Home Assistant integration also uses a
+30-second timeout default; this interoperability reference does not establish
+the cause or timing of the owner's failure.
 
 ## Check and remove
 

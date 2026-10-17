@@ -59,7 +59,7 @@ def checked(value):
 
 
 class Transport:
-    def __init__(self, host, pin):
+    def __init__(self, host, pin, timeout=6):
         try:
             address = ipaddress.IPv4Address(host)
         except ipaddress.AddressValueError:
@@ -69,7 +69,10 @@ class Transport:
             raise BridgeError("Host must be a literal RFC1918 IPv4 address")
         if not re.fullmatch(r"[a-fA-F0-9]{64}", pin):
             raise BridgeError("Expected a SHA256 certificate fingerprint")
+        if type(timeout) is not int or not 1 <= timeout <= 30:
+            raise BridgeError("Socket timeout must be an integer from 1 to 30 seconds")
         self.host, self.pin, self.cookie = str(address), pin.lower(), None
+        self.timeout = timeout
 
     def post(self, path, body):
         # This transport uses an explicit leaf pin, not public CA validation.
@@ -77,7 +80,7 @@ class Transport:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-        conn = http.client.HTTPSConnection(self.host, timeout=6, context=context)
+        conn = http.client.HTTPSConnection(self.host, timeout=self.timeout, context=context)
         try:
             conn.connect()
             actual = hashlib.sha256(conn.sock.getpeercert(binary_form=True)).hexdigest()
@@ -100,7 +103,17 @@ class Transport:
             return checked(json.loads(raw))
         except BridgeError:
             raise
-        except (OSError, ValueError, http.client.HTTPException):
+        except TimeoutError:
+            raise BridgeError("Network request timed out") from None
+        except ssl.SSLError:
+            raise BridgeError("TLS negotiation or record failure") from None
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            raise BridgeError("Router response was not valid JSON") from None
+        except http.client.HTTPException:
+            raise BridgeError("HTTP protocol or connection failure") from None
+        except OSError:
+            raise BridgeError("Network connection failed") from None
+        except ValueError:
             # Never stringify an upstream exception: URLs can contain stok.
             raise BridgeError("TLS, network or response decoding failure") from None
         finally:
