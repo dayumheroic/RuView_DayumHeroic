@@ -1,7 +1,29 @@
 # PR notes — stock Deco research and macOS collectors
 
 
-## Latest continuation: device-to-Deco attachment build
+
+## Latest continuation: protected attachment feed verified
+
+2026-10-17. The owner's local sign-in enabled a full real sweep and cloud
+acceptance. This supersedes E84–E89's pending state; no additional collector or
+publisher restart occurred. [Playbook11](11-device-node-associations.md) records
+the reproducer, source semantics and remaining physical-validation gates.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E90 | MEASURED protected mesh | Existing authenticated loopback snapshot observed during the new owner session; bounded normalized JSONL witness, mode0600 outside Git | Coverage4→6→8nodes; five empty-object client lists and three arrays of6/3/2 entries at first full sweep. Ten then-current global clients all uniquely attributed, zero ambiguity. Groups span different times and can contain a client absent from the later global list; group totals are not a simultaneous client count. Confirms the empty-object parser case and distinct memberships; no owner session extracted |
+| E91 | MEASURED cloud acceptance | check_deployment.py --require-associations, existing private config | PASS: eight observed nodes, ten attributed clients, WebSocket782→783/update envelope,19distinct RF samples, RSSI−51/noise−89dBm,4probes; anonymous/cross-origin denial, secure cookie and publisher/viewer isolation pass. Original UI/mapped API/attachment asset protected. CSI/human_presence/pose/vitals remain false |
+| E92 | MEASURED continuing source/UI | Actual authenticated Hardware tab, full-page screenshot outside Git, final normalized witness | All8node cards and aliases/ages render. A later snapshot has12clients,11attributed,1unknown,0ambiguous; an intervening two-node claim rendered ambiguous. One observed E4R→main M5 attachment change appears in local history and UI; no controlled physical movement or exact handoff time established. Seven parent edges are acyclic and all chains reach main. API reports2M5/2M4R/4E4R, not verified physical revisions. Working collection preserved |
+
+No production code changed during this acceptance turn. Existing97focused tests
+and reviewed deployment remain the software gate; no synthetic data was sent to
+the live service. No router write, flashing, radio-mode switch, new recipient or
+credential persistence was introduced. Next: a stock-app membership cross-check
+and controlled, labelled device-roam trial. Keep those distinct from human RF
+motion, localization and pose claims.
+
+
+## Earlier continuation: attachment build before protected acceptance
 
 2026-10-17. [Playbook11](11-device-node-associations.md) describes the native
 node-filtered reads, strict cloud projection and shared attachment UI. The code

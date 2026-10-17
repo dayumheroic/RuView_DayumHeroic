@@ -1,7 +1,33 @@
 # CC handoff — stock Deco research
 
 
-## Latest continuation: attachment build deployed, live gate pending
+
+## Latest continuation: full attachment feed accepted
+
+2026-10-17: E90–E92 and playbook11 supersede the pending state below. Keep the
+working owner-authenticated native app and publisher running. All eight node
+filters responded; actual empty lists are objects with zero entries, while
+populated lists are arrays. The narrow empty-object fix is now hardware-backed.
+Production --require-associations passed:8nodes,10attributed clients, advancing
+WebSocket782→783, private routes/auth/isolation pass. Current Worker deployment
+remains5e11df51f0f84d87ab00274f70727548; no production code changed this turn.
+
+The actual RuView Hardware view shows node cards/parents, attachment ages,
+unknown/conflicting states and one observed E4R→main-M5 change. A later source
+witness had12clients,11attributed,1unknown. Seven parent edges are acyclic and
+all reach the main node. Reported models:2M5/2M4R/4E4R; physical revisions still
+need confirmation. Different node observations are staggered, not simultaneous.
+The observed change is not a controlled roam or proof of physical movement.
+
+Private normalized witnesses and full-page UI screenshot stay outside Git.
+No more owner login/restart is needed for this feature. Next: compare a selected
+attachment with the stock app, then a controlled device-roam trial with labelled
+times and latency/false-change measurements. Do not manufacture human presence,
+CSI, positions or pose from attachments. Existing97focused tests remain green;
+this turn changed documentation only. Preserve the Mac/iPad network connection.
+
+
+## Earlier continuation: installation before protected acceptance
 
 2026-10-17: playbook11 and E84–E89 describe the new attachment pipeline.
 Worker deployment5e11df51f0f84d87ab00274f70727548 serves the shared view on the

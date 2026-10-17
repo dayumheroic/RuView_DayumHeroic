@@ -1,9 +1,10 @@
 # Device-to-Deco attachment observations
 
-Continuation2026-10-17. The owner requests device-to-node tracking through the
-Deco login. The code and hosted UI are implemented; protected node-filtered
-hardware acceptance remains pending after a real filtered response failed the initial array-only schema check. A reviewed parser update is installed for a fresh local sign-in.
-Do not infer success from a deployed page, unit fixtures or the old combined list.
+Continuation2026-10-17. Protected node-filtered collection and cloud acceptance
+now pass on the owner's mesh. All eight Decos responded; the acceptance snapshot
+uniquely attributed ten current client records. Continuing snapshots retain
+unknown/conflicting claims and recorded one observed attachment change. This
+supersedes the initial schema-failure/pending-sign-in state in E84–E89.
 
 ## Desired state and effect
 
@@ -18,8 +19,8 @@ The previously inspected stock client model/controller uses the existing
 `admin/client?form=client_list` read form with `params.device_mac` set to the
 selected node. `default` returns the combined list. The router controller builds
 its node tree from `previous`. See E69 and playbook08 for pinned artifact hashes.
-Those source semantics support this implementation; exact live membership still
-needs acceptance on the owner's firmware.
+Those source semantics support this implementation. E90–E92 record actual filtered
+responses, cloud acceptance and UI rendering on the owner's firmware.
 
 `Session.read_node_clients` fixes the form and `operation:read`, accepts only a
 MAC from the current bounded device inventory, and reuses the existing in-memory
@@ -33,7 +34,10 @@ Eight nodes need at least four cycles; the next cycle waits30seconds after work
 completes. This explicitly increases status reads from two to at most four per
 cycle, without a subnet scan, faster base-loop setting or router writes.
 
-A classified transient optional failure has one delayed retry, on the same node/session in the next normal cycle. Other failures, or another transient failure, stop further association reads for that collection session while base telemetry continues. Reconnect/new local session
+A classified transient optional failure has one delayed retry, on the same
+node/session in the next normal cycle. Other failures, or another transient
+failure, stop further association reads for that collection session while base
+telemetry continues. Reconnect/new local session
 resets the tracker; there is no automatic owner-password retry. Core read failure
 and its existing bounded retry policy remain separate.
 
@@ -57,7 +61,8 @@ and its existing bounded retry policy remain separate.
   establish continuity across those resets. The updated publisher was restarted
   when installing this slice. Pending/conflicting/stale results are explicit.
 - `previous` supplies reported parent links only if it references another current
-  node, and only for non-master records, matching the stock tree builder. It does not supply measured coordinates, link direction or room geometry.
+  node, and only for non-master records, matching the stock tree builder. It does
+  not supply measured coordinates, link direction or room geometry.
 
 ## Implementation and viewer
 
@@ -74,30 +79,49 @@ signed-in companion, leaving the shared login script independent of it.
 
 ## Validation and installation evidence
 
-E84–E89 in [PR notes](PR-NOTES.md) records focused tests and deployment.
-Synthetic tests exercise fixed filters, empty-object/missing/null distinctions, bounded same-session transient retry, diagnostic privacy, identity/parent privacy, unique versus
-ambiguous claims, expiry, optional failure without breaking base collection,
-timestamp ordering, strict cloud references and UI stale states. They do not
-validate the owner's actual filtered response.
+E84–E92 in [PR notes](PR-NOTES.md) record installation, failures, tests,
+deployment and protected acceptance. Synthetic tests cover filters, empty-object
+versus missing/null distinctions, bounded same-session retry, diagnostic privacy,
+ambiguity, expiry and timestamp ordering. Hardware results below are separate.
 
-The installed native scripts/publisher were backed up privately before update.
-Only the owned native process and publisher were restarted. Trust pin, local
-key, target and router settings were retained. The timing guard was installed
-while the app was still at setup_required, without interrupting an authenticated
-session. Each app reload requires the owner to enter the TP-Link password locally; it is neither
-saved nor recoverable from the old process. The first owner sign-in restored eight nodes/twelve clients but stopped the optional read. A diagnostic-only update and a further owner sign-in identified a result object without an array-valued client_list; base collection remained connected with eight nodes/ten clients. A second update accepts an explicitly empty object as an empty report and records local-only schema types/counts. That installed update still needs a real full sweep; null, missing and populated objects remain rejected. No raw response or arbitrary server text is exported.
+The installed scripts and publisher were privately backed up and byte-checked.
+Owned-process reloads required local owner password entry because the session is
+memory-only. Trust pin, local key, target and router settings were preserved.
+The first array-only parser stopped optional reads while base collection worked.
+A diagnostic update identified a schema mismatch. The final parser accepts only
+an explicitly empty object as an empty report; null, missing and populated
+objects remain rejected. Live type/count witnesses now confirm that empty nodes
+return an object with zero entries and populated nodes return client arrays.
+These bounded witnesses stay local; no raw response/server text is exported.
 
-Hardware gate: sign in locally, observe a full eight-node sweep, confirm a
-non-overlapping membership partition or explicitly document ambiguity/unsupported
-filters, then run:
+A full eight-node sweep produced group sizes0/6/0/0/0/3/2/0. The same-time global
+list contained ten current clients, all uniquely attributed; one filtered group
+also retained a client absent from that later global list. Group results have
+different timestamps, so their sum is not a simultaneous whole-network count.
+Continuing snapshots varied: twelve current clients, eleven uniquely attributed,
+one unknown, no ambiguity in one later witness. A transient two-node claim was
+shown as ambiguous rather than selecting a node. No absence/departure inference.
+
+Production acceptance passed with eight observed nodes, ten attributed clients,
+secure authentication/isolation checks, advancing WebSocket782→783, live scalar
+RSSI−51dBm/noise−89dBm and all person/CSI/pose/vital capabilities false:
 
 ```sh
 python3 tools/deco_cloud/check_deployment.py --config "$HOME/Library/Application Support/RuViewDecoBridge/cloud.private.json" --require-associations
 ```
 
-Keep raw observation witnesses owner-only outside Git. Compare one selected
-client/node against the stock app when available. A controlled device roam and
-repeated held-out movement trials are further tests, not completed claims.
+The authenticated Hardware view renders all eight node cards, parent labels,
+attachments, unknown/conflict states and one observed attachment change from an
+E4R to the main M5 between two source observations. That is a natural API
+observation, not a controlled roam or proof that a device/person physically
+moved. Seven parent edges were acyclic and all chains reached the main node.
+Reported model labels were2M5/2M4R/4E4R; physical revisions remain unverified.
+Private normalized JSONL and browser screenshot witnesses are mode0600 outside
+Git. Preserve the working session; no further collector restart is needed.
+
+Remaining acceptance: match a chosen attachment to the stock app, run a
+controlled device roam with ground-truth times, and assess detection latency and
+false changes over held-out trials. Exact room/person location remains unknown.
 
 ## Recovery
 
