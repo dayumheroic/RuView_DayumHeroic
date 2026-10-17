@@ -6,6 +6,9 @@ Subsequent owner request explores existing clients and handshake metadata.
 See [playbook08](08-device-metadata-and-feedback.md) and E63–E67 below. No
 running-app restart, radio-mode change or new protected form was requested.
 
+E68–E69 continue within the owner's current-Mac/iPad constraint; the second
+Mac is Wi-Fi only. Defer dedicated receiver trials and preserve remote access.
+
 | ID | Label | Reproducer/source | Actual result / limit |
 |---|---|---|---|
 | E61 | MEASURED | Owner's 21:29:52 local screenshot, then authenticated local `GET /v1/snapshot` on the running installed app; source observation `2026-10-17T02:51:10.932121+00:00` | Owner screenshot shows 8 nodes/11 clients. Later HTTP200 API snapshot is `connected`, mesh `live_unverified`, 8 nodes/12 clients, about27 seconds old. Normalized witness saved mode0600 outside Git; no raw protected payload, password or browser session extracted. Confirms protected mesh collection; raw-rate units, complete semantics, long-run reliability and CSI/human motion remain unverified. Different-time client counts are not evidence of a movement event |
@@ -15,6 +18,8 @@ running-app restart, radio-mode change or new protected form was requested.
 | E65 | MEASURED | tcpdump version; PATH tool lookup; libpcap inactive pcap_create/en0 → pcap_can_set_rfmon → pcap_close | tcpdump4.99.1/libpcap1.10.1. tshark/capinfos/dumpcap absent from PATH. Capability query returned -8 permission-denied. No activation, mode/channel setter, privileged retry or capture; compatibility remains unknown |
 | E66 | MEASURED source review / CLAIMED hardware feasibility | Existing tools/bfi source, README, OPTIMIZATION and proposed ADR365; original Wi-BFI/BeamSense papers linked in playbook08 | Existing offline decoder/independent-comparison/quality tools can support a future trial. Prior repository experiments used different AP/receiver hardware and are not this Deco mesh's evidence. Repeated feedback is distinct from login handshake and full CSI. Sustained readable feedback, capture format and motion accuracy remain unverified here |
 | E67 | MEASURED static source | Two unauthenticated same-socket leaf-pinned GETs of declared mapRouter/mapClients models;6second socket timeout,512KiB cap | Both HTTP200. Router model1816bytes SHA256 eadd8cb52a7b70161d0cdd66a4aaf7a3b6ee9a8f015b0eb1565115b1c1f75128; client model896bytes SHA256 871410325bfed86b6da9601e4faae65e133d5ea8ab74f6cf2cf26641b0d46a75. No new signal-scale semantics found. Private static artifacts retained; downloaded JS not executed, no credentials used |
+| E68 | CLAIMED owner hardware / explicit research constraint | Owner reply: second Mac Wi-Fi only; keep research on current Mac and iPad | Availability question resolved. Defer dedicated monitor-mode receiver trial; retain current associated-link/bridge connection. No purchase, wired setup, second-host operation or privilege retry inferred |
+| E69 | MEASURED static-source review | Seven bounded unauthenticated pinned static GETs; module registry/router model capped128KiB, remaining declared controllers/view capped256KiB;6second socket timeout; artifact hashes in playbook08 | All HTTP200. Client controller uses selected device_mac filter and connection_type labels. Router list2Tree uses previous for parents. No dBm mapping or continuous RF stream found in inspected code. Generic model/band support is not measured capability of this mesh. No code executed, credential use, protected form call, polling change or app restart |
 
 See [continuous feed and private cloud](07-continuous-feed-and-private-cloud.md).
 Earlier pending-capture statements below are historical and superseded by E61;

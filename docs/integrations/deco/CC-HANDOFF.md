@@ -8,8 +8,12 @@ analysis, separates security handshakes from repeated beamforming feedback,
 and records existing node signal fields versus missing client signal fields.
 A 90-second local observer completed; no router polling increase. An inactive
 libpcap capability query returned permission-denied, not a compatibility verdict.
-No monitor-mode activation or packet capture. Second Mac/Ethernet availability
-is pending for a later isolated receiver trial. Detailed household inventory
+No monitor-mode activation or packet capture. E68 resolves hardware availability:
+second Mac is Wi-Fi only; owner selects research on current Mac and iPad.
+Defer isolated receiver trials and preserve this connection. E69 traces stock
+client filters/band labels and raw node-parent topology; no signal-scale
+conversion or continuous RF stream found in the inspected source paths.
+Detailed household inventory
 and observations stay private. Existing RuView BFI code is a research asset,
 not proof of Deco capture compatibility or movement detection.
 

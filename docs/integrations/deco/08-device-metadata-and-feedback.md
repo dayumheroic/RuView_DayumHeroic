@@ -2,6 +2,12 @@
 
 ## Desired state and effect
 
+Current owner constraint (E68): the second Mac is Wi-Fi only; keep research on
+the current Mac and iPad. Preserve their associated Wi-Fi connections and the
+running bridge. Defer dedicated monitor-mode trials; second-Mac/Ethernet
+availability is no longer a pending question. Continue source review, existing
+normalized API observations and ordinary associated-link measurements locally.
+
 Use existing owned clients as transmitters, where compatible, to investigate
 observable radio changes without flashing Decos or clients. First establish
 what measurements exist; then perform labelled motion trials. This playbook
@@ -121,10 +127,10 @@ read-only discovery. See libpcap's documented distinction below.
    walking periods with fixed endpoints; record traffic, channel and roaming
    changes as confounders. This is an experiment, not a calibrated detector.
 3. For passive feedback capture, select a separate receiver with independent
-   management first. The second Mac's Ethernet availability was requested; no
-   assumptions about its accessibility or adapter support. Do not switch the
-   current bridge/remote-session Wi-Fi interface into monitor mode. A permitted
-   privilege-bearing capture setup remains separate from read-only preflight.
+   management first. The owner confirmed Wi-Fi-only hardware and selected
+   current-Mac/iPad research (E68), so defer this trial. Do not switch the
+   current bridge/remote-session Wi-Fi interface into monitor mode. A later
+   capture setup remains separate from current read-only research.
 4. First demonstrate own-AP beacons on the verified channel with bounded time,
    size/packet limits and restoration. Then filter intended own-link feedback,
    retaining captures privately. Do not force reconnects/deauthentication,
@@ -140,6 +146,41 @@ read-only discovery. See libpcap's documented distinction below.
    mesh records and from RuView pose/vitals claims.
 
 ## Recovery and evidence
+
+### Same-Mac static-source follow-up (E69)
+
+Seven bounded unauthenticated same-socket pinned GETs read the declared module
+registry, router model/controllers/view, client controller and common utility
+controller. No downloaded code ran; no session material or protected form was
+used. The client controller sends the selected `device_mac` with the existing
+client-list read and renders `connection_type` labels. Its ten-second UI reload
+timer is not a validated polling recommendation for this bridge. No polling
+configuration was changed.
+
+The router controller's `list2Tree` links non-master records using the raw
+`previous` field; it selects identity/display fields, images and online state
+for the tree. This supports a candidate topology parser, not proof of stable
+identifiers or complete parent semantics in a captured fixture. Generic code
+for newer Deco models/bands is not evidence this hardware supports them.
+
+No dBm mapping, signal-field conversion or continuous radio sample stream was
+found in the inspected paths. This bounded negative result does not establish
+that all stock interfaces lack richer fields. Next, verify parent/client-band
+fields in a future explicit allowlisted diagnostic capture, then compare node
+quality with a matching stock display/source. Do not inspect process/session
+memory or restart a successful collection merely to obtain extra raw fields.
+
+| Static source under `/webpages/` | SHA256 |
+|---|---|
+| `config/modules.json` | `9a0e16e24c9e9387566cfab3d6e4bb9f68f8fb54b90f89b4bb5d163e622654ec` |
+| `modules/networkMap/mapRouter/models.js` | `eadd8cb52a7b70161d0cdd66a4aaf7a3b6ee9a8f015b0eb1565115b1c1f75128` |
+| `modules/networkMap/controllers.js` | `5cfc2446290c5ec6ec524c0b62eef6584d92a457601e824dae3a446d2b555ac7` |
+| `modules/networkMap/mapRouter/controllers.js` | `f2aa8ac9dfa20010613229f77160098886b8fdb000d594d8abe38bdddb2772c4` |
+| `modules/networkMap/mapRouter/view.html` | `b1d310927e5268cfc139949f8be26364551fa721bf9277270263f71f3f47dcb1` |
+| `modules/networkMap/mapClients/controllers.js` | `2259b978160eb19c80fc964a7e644b524f6cec468cf7bf3203ca856c8aae6d66` |
+| `modules/utils/controllers.js` | `542055803bd6c4700b3a5d73ef22e34ed315beaa0d48ece70a22636ea47a4e67` |
+
+### Cleanup
 
 Stop local snapshot observation with no router rollback. Packet trials must
 record and verify receiver restoration before being called complete. Keep raw
