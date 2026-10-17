@@ -1,5 +1,16 @@
 # PR notes — stock Deco research and macOS collectors
 
+## Latest continuation: hardware success and remote-feed design
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E61 | MEASURED | Owner's 21:29:52 local screenshot, then authenticated local `GET /v1/snapshot` on the running installed app; source observation `2026-10-17T02:51:10.932121+00:00` | Owner screenshot shows 8 nodes/11 clients. Later HTTP200 API snapshot is `connected`, mesh `live_unverified`, 8 nodes/12 clients, about27 seconds old. Normalized witness saved mode0600 outside Git; no raw protected payload, password or browser session extracted. Confirms protected mesh collection; raw-rate units, complete semantics, long-run reliability and CSI/human motion remain unverified. Different-time client counts are not evidence of a movement event |
+| E62 | MEASURED source review / CLAIMED proposed design | Read `State.mesh_loop`, `State.radio_loop`, `ui/mesh.mjs`, `mesh-client.mjs` and current Cloudflare primary documentation linked in playbook07 | Existing acquisition waits30seconds after mesh batches and5seconds after radio reads; UI fetches every2.5seconds. Proposed outbound publisher → Worker/DO → WebSocket dashboard, protected by Access invite allowlist. No stock webhook, cloud deployment or new stream endpoint verified/implemented. Cloud account, hostname, initial owner email and acceptance tests remain pending. No running app restart, polling increase, cloud resource creation or router changes |
+
+See [continuous feed and private cloud](07-continuous-feed-and-private-cloud.md).
+Earlier pending-capture statements below are historical and superseded by E61;
+earlier unit/sensing/reliability limits still apply.
+
 ## Change
 
 The project needs a verified way to collect stock Deco telemetry before building

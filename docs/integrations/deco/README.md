@@ -6,10 +6,12 @@ firmware upgrades/downgrades, factory resets, or router configuration changes.
 
 Includes a bounded [research collector](../../../tools/deco_bridge/README.md)
 and a native Mac RF reader. A local [Mac app, bridge API and RuView mesh page](../../../tools/deco_bridge/APP.md)
-now provide a working RF-to-dashboard path. The collector's pinned HTTPS login handshake works
-on the main M5; owner-authenticated telemetry capture remains pending. The Mac
-reader returns real current-link RSSI/noise/channel/rate. Neither establishes
-stock complex CSI or completed protected-mesh acceptance. Signed-in stock UI evidence
+now provide working RF and protected mesh-to-dashboard paths. E61 verifies a
+live normalized API snapshot with eight nodes and twelve client records; an
+earlier owner screenshot showed eleven clients. The Mac reader returns real
+current-link RSSI/noise/channel/rate. Raw-rate units, complete field semantics
+and long-run reliability remain unverified. No stock complex CSI or human-motion
+detection is established. Signed-in stock UI evidence
 and the complete eight-node inventory are in playbook 01 and PR notes.
 
 | Playbook | Desired state and intended effect | Completion evidence |
@@ -20,6 +22,7 @@ and the complete eight-node inventory are in playbook 01 and PR notes.
 | [04 Integration design](04-integration-design.md) | Select an observed telemetry path and preserve provenance | Contract, fixture replay and reviewed interface decision |
 | [05 macOS bridge](05-macos-bridge.md) | Deliver a small local collector with reliable diagnostics | Offline tests, live exact-firmware acceptance, installation and removal checks |
 | [06 Raw telemetry avenues](06-raw-telemetry-research.md) | Investigate APIs, logs, security findings, firmware, BFI and native RF access | Per-avenue evidence, exclusions and falsifiable next gate |
+| [07 Continuous feed and private cloud](07-continuous-feed-and-private-cloud.md) | Deliver observations to owner/invited mobile viewers through Cloudflare | Proposed stream/authentication contract and deployment gates; not deployed |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and

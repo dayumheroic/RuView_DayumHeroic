@@ -2,6 +2,15 @@
 
 ## Objective and authority
 
+Latest continuation: E61 confirms a successful protected local snapshot with
+eight nodes/twelve client records. The owner now requests continuous delivery
+and private phone/iPad access through their Cloudflare account. See
+[playbook 07](07-continuous-feed-and-private-cloud.md). This is proposed cloud
+design, not a deployed stream. Hostname and initial owner email are pending.
+Keep the working authenticated Mac app running. Cloud delivery cannot convert
+traffic/RSSI into validated human-motion measurements. Never tunnel the current
+local auth/control port or expose its bridge key to remote viewers.
+
 Continue the owner's RuView–Deco project toward a lightweight macOS bridge.
 The user authorizes repository research, documentation and assessment of their
 own network; start with read-only hardware/interface discovery. No flashing or
