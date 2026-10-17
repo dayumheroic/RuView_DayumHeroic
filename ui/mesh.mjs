@@ -9,6 +9,19 @@ const phases = {setup_required: 'Deco sign-in required', connecting: 'Reading pr
   connected: 'Deco collection connected', failed: 'Deco collection stopped; use Reconnect Deco to sign in again', paused: 'Deco collection paused; use Reconnect Deco to resume'};
 const failureStages = {authentication:'authentication', read_devices:'device-list read', read_clients:'client-list read',
   read_performance:'performance read', read_mode:'mode read', response_schema:'response schema validation'};
+const failureReasons = {
+  certificate_pin_mismatch:'The router certificate did not match its configured fingerprint.',
+  transport_or_decode:'The TLS connection, network request or response decoding failed.',
+  http_response:'The router returned an unexpected HTTP status.',
+  router_rejected:'The router rejected the request; its cause has not been established.',
+  encrypted_response:'The encrypted response could not be decoded.',
+  handshake_schema:'The key handshake returned an unsupported structure.',
+  api_key:'The router returned an unsupported cryptographic key.',
+  session_token:'Login did not return a supported session token.',
+  response_schema:'The device/client response structure is unsupported.',
+  response_size:'The router response exceeded the size limit.',
+  request_failed:'The operation failed; no automatic retry was attempted.'
+};
 function field(id, value, unit = '') { $(id).textContent = Number.isFinite(value) ? `${value}${unit}` : '—'; }
 function badge(id, state) { $(id).textContent = sourceLabel(state); $(id).dataset.state = state; }
 function clearReadings(message) {
@@ -26,7 +39,7 @@ function clearReadings(message) {
 function render(value) {
   const {radio, mesh} = value;
   const phase = value.connection === 'failed' && failureStages[value.failure_stage]
-    ? `Deco stopped during ${failureStages[value.failure_stage]}; use Reconnect Deco to sign in again`
+    ? `Deco stopped during ${failureStages[value.failure_stage]}. ${failureReasons[value.failure_reason] || ''} Use Reconnect Deco to sign in again.`
     : (phases[value.connection] || 'Disconnected');
   $('connection').textContent = phase;
   $('updated').textContent = `Companion reached ${new Date().toLocaleTimeString()}`;

@@ -22,6 +22,20 @@ from urllib.parse import urlsplit
 from deco_bridge import BridgeError, Session, Transport, compact, normalize
 
 CAPABILITIES = {"complex_csi": False, "human_presence": False, "vitals": False, "pose": False}
+# Exact collector-owned messages map to fixed categories. Unknown upstream text
+# is never reflected in diagnostics or request logs.
+FAILURE_REASONS = {
+    "Certificate pin mismatch; no HTTP request sent": "certificate_pin_mismatch",
+    "TLS, network or response decoding failure": "transport_or_decode",
+    "Non-200 HTTP response; no redirect or retry followed": "http_response",
+    "Router rejected request; stopped without automatic retry": "router_rejected",
+    "Malformed encrypted response": "encrypted_response",
+    "Malformed handshake": "handshake_schema",
+    "Unsupported or malformed API RSA key": "api_key",
+    "Login did not return a supported session token": "session_token",
+    "Unsupported protected response schema": "response_schema",
+    "Router response exceeded size limit": "response_size",
+}
 ASSETS = {"/": ("mesh.html", "text/html; charset=utf-8"),
           "/mesh.html": ("mesh.html", "text/html; charset=utf-8"),
           "/mesh.css": ("mesh.css", "text/css; charset=utf-8"),
@@ -106,6 +120,7 @@ class State:
         self.radio_failed = False
         self.phase = "setup_required"
         self.failure_stage = None
+        self.failure_reason = None
         self.attempted = False
         self.last_attempt = None
         self.mesh_worker = None
@@ -173,12 +188,13 @@ class State:
                     self.mesh_wall = time.time()
                 if self.mesh_stop.wait(30):
                     return
-        except Exception:
+        except Exception as error:
             # Router-controlled exception messages can contain a session URL or secret.
             with self.lock:
                 if self.phase != "paused":
                     self.phase = "failed"
                     self.failure_stage = stage
+                    self.failure_reason = FAILURE_REASONS.get(str(error), "request_failed") if isinstance(error, BridgeError) else "request_failed"
         finally:
             password = session = None
 
@@ -206,6 +222,7 @@ class State:
             self.mesh, self.mesh_time, self.mesh_wall = None, None, None
             self.salt = secrets.token_bytes(32)
             self.attempted, self.failure_stage, self.phase = False, None, "setup_required"
+            self.failure_reason = None
             self.mesh_worker = None
             self.workers = [worker for worker in self.workers if worker.is_alive()]
 
@@ -238,6 +255,7 @@ class State:
             return {"schema": "ruview.bridge.v0", "radio": radio, "mesh": mesh,
                     "connection": self.phase, "capabilities": CAPABILITIES,
                     "failure_stage": self.failure_stage,
+                    "failure_reason": self.failure_reason,
                     "recovery": self.recovery(),
                     "target": {"host": self.config["host"], "certificate_sha256": self.config["pin"]},
                     "sign_in_attempted": self.attempted}

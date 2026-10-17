@@ -176,6 +176,17 @@ No automatic auth retry or saved password. This supersedes earlier app-level
 “restart after one attempt per run” instructions; CLI behavior is unchanged.
 The user does not need to find a hidden app restart action to recover.
 
+### Resume after desktop restart
+
+| ID | Label | Reproducer/source | Expected / actual / limit |
+|---|---|---|---|
+| E55 | MEASURED | Installed app snapshot after desktop restart; separate two-form pinned unauthenticated probe | App had a newer authentication-stage failure, with Reconnect enabled and RF available. Repeat probe passes with512/1024-bit API keys and no credential attempt. The older build retained no failure reason, so neither wrong password nor a transport/protocol cause is established |
+| E56 | SYNTHETIC diagnostics regression | Focused Python/Node checks |38 Python +7 Node tests pass. Exact collector-owned errors map to fixed reason categories; unknown exception text is never exposed, and reset clears diagnostics. No owner login is retried automatically. These checks do not validate the next real protected response |
+
+The resumed update adds safe reason categories to make another authentication
+failure diagnosable. Existing stage-only evidence cannot be reconstructed into
+a detailed error. No credentials/session memory were inspected or recovered.
+
 ## Initial documentation-phase validation (historical)
 
 Performance continuation validation: four staged documents, twelve Markdown

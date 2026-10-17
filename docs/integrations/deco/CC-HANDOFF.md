@@ -92,6 +92,10 @@ stop and fix the adapter using observed fields, without automatic retries.
 The updated app was reopened at sign-in after the first failed collection.
 Inspect local snapshot output directly when the owner retries. Never request
 the password in chat or try to recover it from process/browser memory.
+After the desktop restart a newer attempt failed at authentication; the old
+stage-only result cannot identify its cause. The unauthenticated pinned probe
+still passes. The app now exposes fixed failure_reason categories with no
+upstream exception text, so inspect stage/reason together on the next attempt.
 
 Mesh/device telemetry belongs in a separate surface. Existing sensing outputs
 and MQTT publication are not generic Deco inputs. A native provider needs an

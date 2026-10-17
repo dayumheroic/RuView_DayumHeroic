@@ -10,6 +10,7 @@ import unittest
 from unittest.mock import patch
 
 from bridge_service import Server, State, config_read, origin, radio_read
+from deco_bridge import BridgeError
 
 
 CONFIG = {"host": "192.168.50.1", "pin": "a" * 64, "bridge_key": "b" * 64, "port": 8766}
@@ -79,8 +80,31 @@ class StateTests(unittest.TestCase):
         self.assertEqual(self.state.phase, "failed")
         self.assertEqual(self.state.snapshot()["failure_stage"], "authentication")
         self.assertNotIn("SECRET-SENTINEL", json.dumps(self.state.snapshot()))
+        self.assertEqual(self.state.snapshot()["failure_reason"], "request_failed")
         with self.assertRaises(Exception):
             self.state.connect("synthetic-password", True)
+
+    def test_known_error_category_is_safe_and_reset_clears_it(self):
+        class Rejected:
+            def login(self, _password):
+                raise BridgeError("Router rejected request; stopped without automatic retry")
+        self.state.factory = Rejected
+        self.state.connect("synthetic-password", True)
+        self.state.mesh_worker.join(2)
+        self.assertEqual(self.state.snapshot()["failure_reason"], "router_rejected")
+        self.state.last_attempt = time.monotonic() - 31
+        self.state.reset()
+        self.assertIsNone(self.state.snapshot()["failure_reason"])
+
+    def test_unknown_collector_exception_text_is_not_exposed(self):
+        class Rejected:
+            def login(self, _password): raise BridgeError("PRIVATE-URL-SECRET-SENTINEL")
+        self.state.factory = Rejected
+        self.state.connect("synthetic-password", True)
+        self.state.mesh_worker.join(2)
+        value = self.state.snapshot()
+        self.assertEqual(value["failure_reason"], "request_failed")
+        self.assertNotIn("PRIVATE-URL-SECRET-SENTINEL", json.dumps(value))
 
     def test_successful_batch_keeps_aliases_and_fixed_reads(self):
         calls = []

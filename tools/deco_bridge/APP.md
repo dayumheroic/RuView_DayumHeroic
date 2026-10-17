@@ -70,8 +70,10 @@ All real samples remain `live_unverified`; no attestation or calibrated sensing
 claim. No automatic owner-login retry or reconnect after a protected read/schema
 error. Connection phases are `setup_required`, `connecting`, `connected`,
 `failed` and `paused`, separate from ADR-295 source states.
-Failure diagnostics expose only a fixed stage (authentication, a named status
-read or schema validation), never router error text or session URLs.
+Failure diagnostics expose a fixed stage and a fixed reason category (pin,
+transport/decoding, HTTP, router rejection, encryption or schema), never router
+error text or session URLs. An authentication-stage failure alone does not
+establish that the password was wrong. Unknown exceptions become request_failed.
 
 The API uses one HTTP request handler at a time, three-second local socket
 timeouts and 4 KiB mutation bodies. Separate RF and mesh workers keep sampling
