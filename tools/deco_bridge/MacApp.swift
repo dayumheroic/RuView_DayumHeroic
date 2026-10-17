@@ -38,6 +38,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
             let appMenu = NSMenu()
             appMenu.addItem(withTitle: "Quit RuView Deco Bridge", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
             item.submenu = appMenu
+            let editItem = NSMenuItem(title: "Edit", action: nil, keyEquivalent: "")
+            let editMenu = NSMenu(title: "Edit")
+            for (title, action, key) in [("Cut", "cut:", "x"), ("Copy", "copy:", "c"),
+                                         ("Paste", "paste:", "v"), ("Select All", "selectAll:", "a")] {
+                editMenu.addItem(withTitle: title, action: Selector(action), keyEquivalent: key)
+            }
+            editItem.submenu = editMenu
+            menu.addItem(editItem)
             NSApp.mainMenu = menu
             let configuration = WKWebViewConfiguration()
             configuration.websiteDataStore = .nonPersistent()
