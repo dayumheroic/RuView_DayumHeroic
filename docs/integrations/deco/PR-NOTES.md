@@ -1,6 +1,32 @@
 # PR notes — stock Deco research and macOS collectors
 
-## Latest continuation: hardware success and remote-feed design
+## Latest continuation: deployed private companion and live experiments
+
+The owner authorized cloud deployment and chose private application
+authentication while Access remains unavailable. Code under `tools/deco_cloud`
+and the outbound publisher now implement a real stream from the existing native
+bridge. The cloud page is a companion telemetry dashboard. The original RuView
+Sensing/Live Demo/Observatory UI and Rust sensing backend are not deployed or
+connected by this slice. Reusing them with an explicit supported telemetry mode
+is the next integration gate; no mesh-to-pose frames are fabricated.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E70 | MEASURED source review / unit vectors | Apple CoreWLAN primary docs; pinned community API models; `test_research_feed.py`, `test_contract.mjs` | RSSI/noise already dBm; exact power conversion and SNR estimate implemented. Raw node quality remains ordinal with no validated inverse; client RSSI absent in observed bridge records. Literal string search of two previously downloaded firmware images found no new clear signal-field names, but compressed content was not decoded; this is not an absence proof |
+| E71 | MEASURED live experiment | `research_feed.py --icmp`, cached ARP targets on current subnet, owner-verified gateway identity | Four targets at most; two ICMP requests each per batch, at least30seconds between completed batches. Three targets replied in observed batches; one timed out. Separate probe timestamps/aliases, no range sweep. RTT/loss are network timing, not radar, distance, occupancy or RF phase. No extra protected router reads |
+| E72 | MEASURED interface discovery | Bounded eight-second mDNS service-type discovery; private witness outside Git | Advertised AirPlay/RAOP, companion-link, HomeKit, Matter, meshcop, SMB, Spotify and supporting service types. Advertising does not prove reachable measurement APIs or sensing capability. No authentication, capture, device control or client app installation |
+| E73 | SYNTHETIC boundary tests / MEASURED build | Python unittest discovery; Node contract and mesh-client tests; npm check/build/audit; Wrangler dry run and isolated local DO |49 Python +5 cloud Node +10 existing mesh Node tests pass. Type/binding generation, bundle, dry run and audit pass, zero reported vulnerabilities. Local DO/auth round-trip passed with clearly isolated fixtures. Initial mesh-test command used a nonexistent test path; corrected to tools/deco_bridge/test_mesh_client.mjs and passed. No Rust/CI validation claimed |
+| E74 | MEASURED cloud acceptance | `check_deployment.py` using owner-only config; deployed Worker/DO revision `984223f3334a4cab898a4dab10dfb358` | Anonymous API401/root303, cross-origin denial, Secure/HttpOnly/SameSite cookie, publisher/viewer isolation and advancing real WebSocket messages pass. Latest check sequence58→59, delta update envelope,8 nodes/11 clients, RSSI−49dBm/noise−91dBm,4 probes. Complex CSI/presence/pose/vitals all false. Deployment API etag d0f9e3b67af8b974e9edb0813ab53f01af07d1cc4aa51262d40ff18a19406884. Account IDs/emails/URL/credentials remain private |
+| E75 | MEASURED macOS installation | Owner-scoped LaunchAgent plus aggregate publisher log and installed-source comparison | Publisher runs with existing private app Python runtime, continues publishing; native authenticated bridge remains running unchanged. Checkout-venv launch initially stalled without startup output; private-runtime selection resolved it, cause not established. HTTPS initially lacked Python's default CA bundle; system CA bundle now verifies chain and hostname, no TLS bypass. Brief publisher-only RSS observation about21MiB is not full-app resource acceptance |
+| E76 | MEASURED browser rendering / source review | Actual authenticated cloud UI in in-app browser, desktop and768×1024/390×844 viewports; existing ui source | Live RF/chart,8nodes/11clients and probe data render; smaller viewports stack panels, browser size restored. Private screenshots stay outside Git. This is not actual Safari/cellular testing. RuView already supplies Sensing, Live Demo and Observatory; Observatory constructs DemoDataGenerator and live paths require sensing schema. Existing original UI integration remains open. No controlled Still/Walking trials or held-out motion evaluation ran |
+
+Implementation/reproduction and credential lifecycle:
+[cloud README](../../../tools/deco_cloud/README.md),
+[live experiment playbook](09-live-link-experiments.md).
+No router configuration, firmware, radio mode or privileged capture changed.
+The working Mac app must remain awake/home/running for its protected data.
+
+## Earlier continuation: hardware success and remote-feed design
 
 Subsequent owner request explores existing clients and handshake metadata.
 See [playbook08](08-device-metadata-and-feedback.md) and E63–E67 below. No

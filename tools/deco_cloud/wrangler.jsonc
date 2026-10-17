@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ruview-deco",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "rules": [{"type": "Text", "globs": ["**/*.html", "**/*.css", "**/*.txt"], "fallthrough": true}],
+  "durable_objects": {"bindings": [{"name": "FEEDS", "class_name": "HomeFeed"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["HomeFeed"]}],
+  "observability": {"enabled": false}
+}

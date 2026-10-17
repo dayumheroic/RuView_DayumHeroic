@@ -1,9 +1,21 @@
 # Continuous feed and private Cloudflare access
 
-Status: **CLAIMED / proposed design**, 2026-10-16. No cloud deployment or new
-stream endpoint is implemented by this document. The working collector remains
-unchanged. E61 records real hardware success; E62 records this source review and
-design in [PR notes](PR-NOTES.md).
+Status: **MEASURED deployed companion**, 2026-10-16. E70–E76 in
+[PR notes](PR-NOTES.md) supersede the original proposal below. The outbound
+publisher, Worker, SQLite Durable Object and WebSocket dashboard are implemented
+in [tools/deco_cloud](../../../tools/deco_cloud/README.md). The existing native
+collector remains unchanged and authenticated. This companion is not the
+original RuView UI or native Rust sensing backend.
+
+Cloudflare Access was unavailable on the selected account. The owner explicitly
+selected private application authentication instead of completing plan/billing
+setup. The implementation uses expiring high-entropy invitations, separate
+publisher authority and secure cookies, not Access or verified email identities.
+No plan purchase, Access application, DNS zone or tunnel was created. Initial
+access is owner-only; invite administration remains manual. Mobile viewport
+rendering was checked in the in-app browser; actual iPad/Safari/cellular
+acceptance remains open. The following original design is retained as a record
+of the alternatives and gates, not a claim they are all implemented.
 
 ## Desired state and effect
 
@@ -148,5 +160,6 @@ the local bridge. Never alter router firmware/settings for cloud recovery.
 - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/)
   — outbound connection model for the home-hosted alternative.
 
-These platform capabilities are documented, not measured in an app deployment.
-No Cloudflare resource, DNS or access policy was changed.
+The Access/Tunnel alternatives are documented, not deployed. The Worker/DO and
+private application authentication now have deployment evidence in PR notes.
+No DNS or Access policy was changed.

@@ -1,0 +1,18 @@
+{
+  "name": "ruview-deco-private-observatory",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild worker.mjs --bundle --format=esm --platform=browser --external:cloudflare:workers --external:node:crypto --loader:.html=text --loader:.css=text --loader:.txt=text --outfile=dist/worker.mjs",
+    "test": "node --test test_contract.mjs",
+    "dev": "wrangler dev --ip 127.0.0.1 --port 8787",
+    "check": "wrangler types && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261016.1",
+    "@types/node": "26.6.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "wrangler": "4.151.1"
+  }
+}

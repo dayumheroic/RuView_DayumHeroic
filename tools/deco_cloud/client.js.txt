@@ -1,0 +1,47 @@
+const $=id=>document.getElementById(id);
+const fmt=(x,n=1)=>Number.isFinite(x)?x.toFixed(n):'—';
+const age=t=>t?Math.max(0,(Date.now()-Date.parse(t))/1000):Infinity;
+async function post(path,payload){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'same-origin',redirect:'error',signal:AbortSignal.timeout(8000)});if(!r.ok)throw new Error(r.status===401?'Access code rejected or expired.':'Request stopped. Please try again.');return r.json();}
+if($('login')){
+  $('login').addEventListener('submit',async e=>{e.preventDefault();const token=$('token').value;$('token').value='';try{await post('/api/login',{token});location.replace('/');}catch(e){$('login-status').textContent=e.message;}});
+  const token=new URLSearchParams(location.hash.slice(1)).get('invite');history.replaceState(null,'',location.pathname);
+  if(token){$('token').value=token;$('login').requestSubmit();}
+}else{
+let snapshot=null,ws=null,retry=1000,stopped=false;
+function field(id,value,unit='',n=1){$(id).textContent=Number.isFinite(value)?`${fmt(value,n)}${unit}`:'—';}
+function textCell(tr,value){const td=document.createElement('td');td.textContent=value;tr.append(td);}
+function render(v){
+ if(snapshot?.latest&&v.latest&&snapshot.latest.collection===v.latest.collection&&snapshot.latest.sequence>v.latest.sequence)return;
+ snapshot=v;const f=v.latest;const fresh=age(v.received_at)<20;
+ $('connection').textContent=fresh?'LIVE FEED':'PUBLISHER OFFLINE';$('received').textContent=v.received_at?`Last publisher contact · ${Math.floor(age(v.received_at))}s ago`:'Waiting for publisher';
+ if(!f){for(const k of ['rssi','noise','snr','power','rate','nodes','clients','spread','still-mean','walking-mean'])$(k).textContent='—';$('rf-state').textContent='UNAVAILABLE';$('mesh-state').textContent='UNAVAILABLE';$('mesh-map').replaceChildren();$('device-rows').replaceChildren();$('probes').replaceChildren();$('rssi-line').setAttribute('points','');return;}
+ const r=f.radio,rf=fresh&&r.available&&r.source_state==='live_unverified'&&age(r.observed_at)<=15;
+ $('rf-state').textContent=rf?'MEASURED · COREWLAN':'STALE / UNAVAILABLE';field('rssi',rf?r.rssi_dbm:null,'',0);field('noise',rf?r.noise_dbm:null,' dBm',0);
+ field('snr',rf&&Number.isFinite(r.rssi_dbm)&&Number.isFinite(r.noise_dbm)?r.rssi_dbm-r.noise_dbm:null,' dB',0);field('power',rf&&r.rssi_dbm!==null?10**((r.rssi_dbm+60)/10):null,' nW',3);field('rate',rf?r.transmit_rate_mbps:null,' Mbps',0);
+ $('radio-time').textContent=r.observed_at?`Source observation · ${new Date(r.observed_at).toLocaleTimeString()} · channel ${r.channel??'unknown'}`:'No radio observation';
+ const hist=(v.history||[]).filter(x=>age(x.observed)<900&&Number.isFinite(x.rssi));
+ // Do not draw across gaps greater than 15 seconds.
+ let start=0;for(let i=1;i<hist.length;i++)if(Date.parse(hist[i].observed)-Date.parse(hist[i-1].observed)>15000)start=i;
+ const chart=hist.slice(start),begin=chart[0]?Date.parse(chart[0].observed):0,end=chart.at(-1)?Date.parse(chart.at(-1).observed):0;
+ $('rssi-line').setAttribute('points',chart.map(x=>`${600*(Date.parse(x.observed)-begin)/Math.max(1000,end-begin)},${150-150*(Math.max(-90,Math.min(-30,x.rssi))+90)/60}`).join(' '));
+ $('sample-count').textContent=`${hist.length} measured samples · max 15 min`;
+ $('chart-start').textContent=begin?new Date(begin).toLocaleTimeString():'Earlier';$('chart-end').textContent=end?new Date(end).toLocaleTimeString():'Latest';
+ const recent=hist.slice(-12).map(x=>x.rssi),mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+ field('spread',rf&&recent.length>=3?Math.sqrt(mean(recent.map(x=>(x-mean(recent))**2))):null,' dB');
+ for(const label of ['still','walking']){const a=hist.filter(x=>x.label===label).map(x=>x.rssi);field(label+'-mean',a.length?mean(a):null,' dBm');}
+ const m=f.mesh,live=fresh&&m.source_state==='live_unverified'&&age(m.observed_at)<=90;
+ $('mesh-state').textContent=live?'LIVE · UNVERIFIED':'LAST OBSERVED · STALE';field('nodes',m.nodes?.length??null,'',0);field('clients',m.clients?.length??null,'',0);
+ $('mesh-time').textContent=m.observed_at?`Mesh observation · ${Math.floor(age(m.observed_at))}s ago`:'No mesh observation';
+ $('mesh-map').replaceChildren();for(const [i,node] of (m.nodes||[]).entries()){const div=document.createElement('div');div.className='node';const b=document.createElement('b');b.textContent=`N${i+1}`;const span=document.createElement('span');span.textContent=`2G ${node.signal_2g??'—'} · 5G ${node.signal_5g??'—'}`;div.append(b,span);$('mesh-map').append(div);}
+ $('device-rows').replaceChildren();for(const row of m.clients||[]){const tr=document.createElement('tr');for(const x of [row.id.slice(0,12),row.online===true?'Yes':row.online===false?'No':'Unknown',row.down_raw??'—',row.up_raw??'—'])textCell(tr,String(x));$('device-rows').append(tr);}
+ $('probes').replaceChildren();for(const p of f.probes){const tr=document.createElement('tr');for(const x of [p.kind==='gateway'?'Gateway control':p.id,`${fmt(p.rtt_ms)} ms`,`${fmt(p.loss_percent,0)}%`,`${Math.floor(age(p.observed_at))}s`])textCell(tr,x);$('probes').append(tr);}
+ const label=v.label&&age(new Date(v.label.time).toISOString())<300?v.label.value:null;$('label-state').textContent=label?`Owner annotation · ${label.replaceAll('_',' ')} · expires after 5 minutes`:'No active label';
+ for(const b of document.querySelectorAll('[data-label]'))b.classList.toggle('selected',b.dataset.label===label);
+}
+async function sync(){try{const r=await fetch('/api/snapshot',{cache:'no-store',signal:AbortSignal.timeout(8000)});if(r.status===401){stopped=true;location.replace('/login');return;}if(r.ok)render(await r.json());}catch{$('connection').textContent='RECONNECTING';}}
+function connect(){if(stopped)return;ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/api/live`);ws.onopen=()=>{retry=1000;};ws.onmessage=e=>{try{const v=JSON.parse(e.data);if(v.type==='snapshot')render(v);else if(v.type==='update'){const history=[...(snapshot?.history||[])];if(v.sample&&!history.some(x=>x.observed===v.sample.observed))history.push(v.sample);render({type:'snapshot',latest:v.latest,received_at:v.received_at,label:v.label,history:history.filter(x=>age(x.observed)<900).slice(-180)});}}catch{}};ws.onclose=()=>{if(!stopped){setTimeout(()=>{sync();connect();},retry);retry=Math.min(30000,retry*2);}};ws.onerror=()=>ws.close();}
+for(const b of document.querySelectorAll('[data-label]'))b.addEventListener('click',async()=>{try{await post('/api/label',{label:b.dataset.label});}catch(e){$('label-state').textContent=e.message;}});
+$('logout').addEventListener('click',async()=>{stopped=true;ws?.close();await post('/api/logout',{});location.replace('/login');});
+sync();connect();setInterval(()=>{if(snapshot)render(snapshot);},1000);setInterval(()=>{if(!ws||ws.readyState!==WebSocket.OPEN)sync();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){sync();if(!ws||ws.readyState===WebSocket.CLOSED)connect();}});
+}

@@ -1,5 +1,47 @@
 # CC handoff — stock Deco research
 
+## Current handoff: private live companion deployed
+
+E70–E76 in [PR notes](PR-NOTES.md) are the latest state. The native bridge's
+protected collection has succeeded. Preserve its working owner-authenticated
+session. An installed owner-scoped outbound publisher now exports an allowlist
+to a Cloudflare Worker/SQLite Durable Object. An authenticated dashboard receives
+real WebSocket updates; the latest acceptance saw eight nodes, eleven clients
+and four echo probes. No router writes/flashing/radio-mode change occurred.
+
+The owner selected private app authentication because Access was unavailable;
+no plan/billing setup was completed. Invitations are expiring bearer tokens,
+with hash-only cloud bindings and a separate publisher credential. One owner
+invitation exists, no invite-management UI. Keep tokens/account details and raw
+telemetry in private Application Support, never PRs. See
+[cloud README](../../../tools/deco_cloud/README.md) for deployment, auth,
+retention, reproduction, publisher start/stop and revocation. The native bridge
+is independent of the new LaunchAgent. It must remain awake/home/running.
+
+**The cloud dashboard is a companion, not the original RuView UI or Rust
+sensing backend.** The owner explicitly asked about the existing tracking UI;
+the answer is that RuView already includes Sensing/Live Demo/Observatory. Reuse
+those views with an explicit telemetry mode, preserve unknown tracking fields
+and prohibit silent synthetic fallback. Do not call the full RuView tracking
+application connected yet. Native Rust needs a suitable compute deployment;
+the Worker does not run it. No validated human-motion/location result exists.
+
+Next: [playbook09](09-live-link-experiments.md) for controlled current-Mac/iPad
+tests and original-UI integration gates. Current RF is scalar and five-second
+acquisition can miss events. Deco quality0–3 cannot be uniquely converted to
+dBm; Mac RSSI already is dBm. Power/SNR conversion is tested. ICMP RTT is not RF
+radar. Only cached neighbors on the verified home subnet are probed, with at
+most four targets/two requests per target per batch. No sweep or monitor mode.
+
+Focused checks passed: Python/Node contracts and existing mesh client, Worker
+types/build/audit/dry-run, local DO/auth round-trip, real HTTPS/auth/WebSocket
+acceptance and browser rendering. Actual iPad/Safari/cellular, long-run
+sleep/wake, full-app resources and held-out motion acceptance remain open.
+Current source changes are on `codex/deco-stock-telemetry-research`, draft PR34;
+use its latest commit rather than the historical baselines below.
+
+## Historical handoff context (superseded by the current section)
+
 ## Objective and authority
 
 Newest research E63–E67: owner asks about existing clients and handshake metadata.

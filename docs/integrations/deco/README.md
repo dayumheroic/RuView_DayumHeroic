@@ -14,6 +14,13 @@ and long-run reliability remain unverified. No stock complex CSI or human-motion
 detection is established. Signed-in stock UI evidence
 and the complete eight-node inventory are in playbook 01 and PR notes.
 
+The private cloud companion is now deployed, receiving the existing bridge's
+allowlisted export over authenticated HTTPS and delivering WebSocket updates.
+It includes real dBm/power measurements and optional bounded ICMP experiments.
+This is not deployment of the original RuView UI or Rust tracking backend;
+integration with those interfaces remains open. See the
+[cloud implementation](../../../tools/deco_cloud/README.md) and E70–E76.
+
 | Playbook | Desired state and intended effect | Completion evidence |
 |---|---|---|
 | [01 Hardware and interfaces](01-hardware-and-interfaces.md) | Identify each unit and available stock interfaces; avoid designing against assumed capabilities | Exact inventory and field capability matrix from the owner's devices |
@@ -22,8 +29,9 @@ and the complete eight-node inventory are in playbook 01 and PR notes.
 | [04 Integration design](04-integration-design.md) | Select an observed telemetry path and preserve provenance | Contract, fixture replay and reviewed interface decision |
 | [05 macOS bridge](05-macos-bridge.md) | Deliver a small local collector with reliable diagnostics | Offline tests, live exact-firmware acceptance, installation and removal checks |
 | [06 Raw telemetry avenues](06-raw-telemetry-research.md) | Investigate APIs, logs, security findings, firmware, BFI and native RF access | Per-avenue evidence, exclusions and falsifiable next gate |
-| [07 Continuous feed and private cloud](07-continuous-feed-and-private-cloud.md) | Deliver observations to owner/invited mobile viewers through Cloudflare | Proposed stream/authentication contract and deployment gates; not deployed |
+| [07 Continuous feed and private cloud](07-continuous-feed-and-private-cloud.md) | Deliver observations to owner/invited mobile viewers through Cloudflare | Deployed private companion; authenticated ingest and real WebSocket delivery measured |
 | [08 Device metadata and feedback](08-device-metadata-and-feedback.md) | Investigate owned clients, packet metadata and beamforming feedback without flashing | Measured node/client signal-field coverage, read-only capture preflight and controlled-trial gates |
+| [09 Live link experiments](09-live-link-experiments.md) | Test dBm, link variation and network timing without inventing tracks | Unit vectors and live measurements; controlled motion acceptance remains open |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and

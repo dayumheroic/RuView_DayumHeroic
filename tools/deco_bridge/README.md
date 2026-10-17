@@ -8,8 +8,10 @@ signed/notarized distribution is added. See [Mac app setup and API](APP.md).
 
 **MEASURED:** the main M5 hardware 3.2 / firmware 1.9.5 Build 20260602
 Rel.25369 answers the pinned HTTPS `auth` and `keys` read forms, advertising
-512-bit signing and 1024-bit password RSA keys. Authenticated collection is
-pending owner password entry. Tests use synthetic firmware responses.
+512-bit signing and 1024-bit password RSA keys. Authenticated native-app
+collection subsequently succeeded; see evidence E61 and E70–E76 in the
+[PR notes](../../docs/integrations/deco/PR-NOTES.md). Unit tests use synthetic
+firmware responses; real acceptance is recorded separately.
 None of this establishes a complex-CSI export path.
 
 ## Install and test
@@ -120,6 +122,17 @@ exist. Protected hardware acceptance, Keychain opt-in, persistent identity,
 reconnect/sleep-wake, signing and full resource measurements remain unfinished.
 See [research playbooks](../../docs/integrations/deco/README.md).
 
-Stop with Ctrl-C. Remove the private capture directory and `.venv` when no
-longer needed; no root service, launch agent, driver or router setting was added.
+Stop a foreground CLI collector with Ctrl-C. Remove its private capture directory
+and `.venv` when no longer needed. The CLI adds no root service, driver or router
+setting; the separately installed cloud publisher has its own LaunchAgent.
 Protocol provenance and license notice: [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
+
+## Outbound cloud continuation
+
+The working native bridge can now feed the separate private cloud companion
+through `research_feed.py`. This reads only the existing loopback snapshot,
+rebuilds an export allowlist and optionally probes bounded cached home neighbors.
+`install_publisher.py` manages its owner-scoped LaunchAgent independently of
+the native app. See [cloud setup and lifecycle](../deco_cloud/README.md) and
+[controlled link experiments](../../docs/integrations/deco/09-live-link-experiments.md).
+No original RuView tracking UI/Rust backend is deployed by this publisher.
