@@ -17,8 +17,9 @@ and the complete eight-node inventory are in playbook 01 and PR notes.
 The private cloud companion is now deployed, receiving the existing bridge's
 allowlisted export over authenticated HTTPS and delivering WebSocket updates.
 It includes real dBm/power measurements and optional bounded ICMP experiments.
-This is not deployment of the original RuView UI or Rust tracking backend;
-integration with those interfaces remains open. See the
+An adapted bridge mode of the original RuView UI is now deployed at `/ruview/`;
+the native Rust tracking backend remains undeployed. See
+[UI integration and data meanings](10-ruview-ui-bridge-mode.md), the
 [cloud implementation](../../../tools/deco_cloud/README.md) and E70–E76.
 
 | Playbook | Desired state and intended effect | Completion evidence |
@@ -32,6 +33,7 @@ integration with those interfaces remains open. See the
 | [07 Continuous feed and private cloud](07-continuous-feed-and-private-cloud.md) | Deliver observations to owner/invited mobile viewers through Cloudflare | Deployed private companion; authenticated ingest and real WebSocket delivery measured |
 | [08 Device metadata and feedback](08-device-metadata-and-feedback.md) | Investigate owned clients, packet metadata and beamforming feedback without flashing | Measured node/client signal-field coverage, read-only capture preflight and controlled-trial gates |
 | [09 Live link experiments](09-live-link-experiments.md) | Test dBm, link variation and network timing without inventing tracks | Unit vectors and live measurements; controlled motion acceptance remains open |
+| [10 RuView UI bridge mode](10-ruview-ui-bridge-mode.md) | Reuse the original interface and map expected inputs to the live bridge | Deployed private UI, live scalar picture and explicit unknown tracking fields |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and

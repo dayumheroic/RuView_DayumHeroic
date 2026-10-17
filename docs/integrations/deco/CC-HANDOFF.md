@@ -1,5 +1,33 @@
 # CC handoff — stock Deco research
 
+## Latest continuation: existing RuView UI deployed in bridge mode
+
+2026-10-17: [playbook10](10-ruview-ui-bridge-mode.md) and E77–E83 describe the
+implemented `/ruview/` UI. This supersedes the earlier original-UI integration
+gap below. It reuses original shell/CSS/tabs, SensingTab/Gaussian renderer and
+PoseRenderer with a dedicated scalar service, not the stock backend bootstrap.
+Dashboard maps expected inputs, Hardware shows raw levels, Sensing plots real
+RSSI/noise against time, and Live Demo keeps pose empty with inspectable mapped
+JSON. Native Rust inference, full synthetic Observatory and training controls
+remain undeployed. Unsupported outputs remain null, not absent/zero people.
+
+The existing bridge was closed overnight. It was reopened; one explicit local
+owner login restored eight nodes/twelve clients. Preserve that session. Existing
+owner invitation refreshed for the same role/eight-hour duration, no new viewer.
+Latest cloud deployment `b438328f980d41cf9ccf3e868ebff27d`. Private credentials and
+screenshots stay outside Git. No router write/flashing/mode/capture changes.
+
+The pure mapper is `ui/services/deco-sensing.mjs`, shared by browser and mapped
+API. RSSI variance has its own dB² name; it is not CSI amplitude variance.
+Median/MAD plus percentile-guard link change is an unvalidated heuristic, not
+human sensing. Stale/gapped/insufficient data stays unavailable/collecting.
+Effective RF delivery is slower/less regular than a nominal five-second read;
+irregular data gets no Nyquist claim. A bounded45sample1second helper trial
+returned real scalar data without altering installed acquisition; independent
+hardware refresh/motion sensitivity remains unknown. Next: controlled labelled
+trials, consider an optional faster scalar path without disrupting owner auth,
+and continue richer RF-source research. Do not manufacture CSI or keypoints.
+
 ## Current handoff: private live companion deployed
 
 E70–E76 in [PR notes](PR-NOTES.md) are the latest state. The native bridge's

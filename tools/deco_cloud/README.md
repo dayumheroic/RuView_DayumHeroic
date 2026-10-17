@@ -1,11 +1,12 @@
 # Private network telemetry observatory
 
-This is a companion to RuView, not the original RuView tracking UI or Rust
-sensing server. It displays actual Mac CoreWLAN readings, stock Deco records
-and optional low-rate ICMP measurements. It does not generate sensing frames,
-person tracks, positions or skeletons. The existing RuView Sensing, Live Demo
-and Observatory interfaces still need an explicit adapter/deployment decision;
-see [the experiment playbook](../../docs/integrations/deco/09-live-link-experiments.md).
+The companion displays actual Mac CoreWLAN readings, stock Deco records and
+optional low-rate ICMP measurements. `/ruview/` now deploys an adapted bridge
+mode of the existing RuView UI, reusing its shell, CSS, tabs, sensing renderer
+and empty pose renderer. Its input map and live JSON distinguish available
+measurements from missing CSI/pose data. It does not run the native Rust sensing
+server, generate person tracks or deploy the synthetic 3D Observatory. See
+[UI integration](../../docs/integrations/deco/10-ruview-ui-bridge-mode.md).
 
 ## Data path
 
@@ -35,6 +36,8 @@ npx wrangler deploy --dry-run
 npm audit --omit=optional
 ```
 
+The build also generates ignored UI assets from existing repository components;
+install the pinned Three.js dependency even though deployment uses its bundle.
 `check` generates ignored binding types and runs TypeScript over the Worker
 and contract. A dry run is not deployment. The checked-in Wrangler migration
 creates the `HomeFeed` SQLite Durable Object on first deployment.
@@ -78,7 +81,9 @@ python3 check_deployment.py --config "$HOME/Library/Application Support/RuViewDe
 
 This checks anonymous denial, same-origin rules, cookie attributes, separated
 publisher/viewer authority, export privacy and advancing real WebSocket frames.
-It does not log in to Deco, create motion labels or prove motion accuracy.
+It also checks authentication for `/ruview/`, its assets and
+`/api/ruview/snapshot`, preserving unknown CSI/pose outputs. It does not log in
+to Deco, create motion labels or prove motion accuracy.
 
 ## Mac publisher operation
 

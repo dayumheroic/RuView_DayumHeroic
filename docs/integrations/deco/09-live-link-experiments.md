@@ -72,6 +72,11 @@ retries and OS latency.
 
 ## RuView UI and integration gate
 
+Update2026-10-17: [playbook10](10-ruview-ui-bridge-mode.md) implements and deploys
+the adapted existing UI with a dedicated scalar mode, nullable unsupported
+outputs and measured time/power traces. The earlier integration proposal below
+is retained as rationale; native Rust inference remains undeployed.
+
 The repository already contains `ui/index.html` with Sensing and Live Demo tabs,
 and `ui/observatory.html` with 3D visualization. Tracking visuals are not proof
 of tracking input: the Observatory includes a DemoDataGenerator, and live paths

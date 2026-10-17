@@ -42,6 +42,9 @@ def check(config_path):
     assert request("GET", "/api/snapshot")[0] == 401
     assert request("GET", "/")[0] == 303
     assert request("GET", "/health")[0] == 200
+    assert request("GET", "/ruview/")[0] == 303
+    for path in ("/ruview/app.js", "/ruview/style.css", "/api/ruview/snapshot"):
+        assert request("GET", path)[0] == 401
     assert request("POST", "/api/ingest", "{}", {"Content-Type": "application/json"})[0] == 401
     assert request("POST", "/api/login", json.dumps({"token": "0" * 64}),
                    {"Content-Type": "application/json", "Origin": cfg["origin"]})[0] == 401
@@ -53,6 +56,13 @@ def check(config_path):
     status, raw, _ = request("GET", "/api/snapshot", headers=session)
     assert status == 200
     value = json.loads(raw)
+    assert request("GET", "/ruview/", headers=session)[0] == 200
+    assert request("GET", "/ruview/style.css", headers=session)[0] == 200
+    mapped_status, mapped_raw, _ = request("GET", "/api/ruview/snapshot", headers=session)
+    mapped = json.loads(mapped_raw)
+    assert mapped_status == 200 and mapped["schema"] == "ruview.bridge.sensing.v1"
+    assert mapped["classification"]["presence"] is None and mapped["pose_keypoints"] is None
+    assert mapped["features"]["variance"] is None
     assert value["latest"] and value["latest"]["radio"]["source"] == "macos_corewlan"
     for forbidden in (b"certificate_sha256", b"bridge_key", b"publisher_token", b"owner_invitation", b"192.168."):
         assert forbidden not in raw
@@ -112,7 +122,9 @@ def check(config_path):
             mask = os.urandom(4)
             s.sendall(bytes((0x88, 0x82)) + mask + bytes(x ^ mask[i % 4] for i, x in enumerate(b"\x03\xe8")))
     latest = second["latest"]
-    summary = {"label": "MEASURED", "anonymous_denial": True, "cross_origin_denial": True,
+    summary = {"label": "MEASURED", "private_ruview_ui": True, "mapped_sensing": mapped["source_state"],
+               "link_change_state": mapped["change"]["state"], "distinct_rf_samples": mapped["scalar"]["sample_count"],
+               "anonymous_denial": True, "cross_origin_denial": True,
                "private_cookie": True, "publisher_viewer_isolation": True, "live_websocket_updates": True,
                "sequence_before": first["latest"]["sequence"], "sequence_after": latest["sequence"],
                "stream_envelope": second["type"],

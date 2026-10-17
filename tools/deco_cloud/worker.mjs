@@ -5,6 +5,8 @@ import DASHBOARD from './dashboard.html';
 import LOGIN from './login.html';
 import CSS from './style.css';
 import CLIENT from './client.js.txt';
+import {RUVIEW_HTML,RUVIEW_CSS,RUVIEW_JS,RUVIEW_NOTICES} from './ruview-assets.generated.mjs';
+import {bridgeSensing} from '../../ui/services/deco-sensing.mjs';
 const TTL=15*60*1000;
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer',
   'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
@@ -57,6 +59,7 @@ export class HomeFeed extends DurableObject {
     const now=Date.now();const last=this.sql.exec('SELECT value,received FROM latest WHERE id=1').toArray()[0];
     if(last){const old=JSON.parse(last.value);if(old.collection===frame.collection&&old.sequence>=frame.sequence)return {accepted:false,reason:'duplicate'};
       if(now-last.received<2000)return {accepted:false,reason:'rate_limited'};}
+    if(last&&JSON.parse(last.value).collection!==frame.collection){this.sql.exec('DELETE FROM samples');this.sql.exec('DELETE FROM label');}
     this.sql.exec('INSERT OR REPLACE INTO latest VALUES(1,?,?)',JSON.stringify(frame),now);
     const r=frame.radio,label=this.currentLabel();let sample=null;
     if(r.observed_at&&r.available&&r.source_state==='live_unverified'&&now-Date.parse(r.observed_at)<=15000){
@@ -109,9 +112,15 @@ async fetch(request,env){
       return reply(result,result.reason==='rate_limited'?429:200);
     }
     const viewer=await authenticate(request,env);
-    if(!viewer)return request.method==='GET'&&p==='/'?reply('',303,{Location:'/login'}):reply({error:'Viewer authentication required'},401);
+    if(!viewer)return request.method==='GET'&&['/','/ruview','/ruview/'].includes(p)?reply('',303,{Location:'/login'}):reply({error:'Viewer authentication required'},401);
     const feed=env.FEEDS.getByName('home');
     if(request.method==='GET'&&p==='/')return reply(DASHBOARD);
+    if(request.method==='GET'&&p==='/ruview')return reply('',303,{Location:'/ruview/'});
+    if(request.method==='GET'&&p==='/ruview/')return reply(RUVIEW_HTML,200,{'Content-Security-Policy':headers['Content-Security-Policy'].replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")+"; img-src 'self' data:"});
+    if(request.method==='GET'&&p==='/ruview/style.css')return reply(RUVIEW_CSS,200,{'Content-Type':'text/css; charset=utf-8'});
+    if(request.method==='GET'&&p==='/ruview/app.js')return reply(RUVIEW_JS,200,{'Content-Type':'text/javascript; charset=utf-8'});
+    if(request.method==='GET'&&p==='/ruview/notices')return reply(RUVIEW_NOTICES,200,{'Content-Type':'text/plain; charset=utf-8'});
+    if(request.method==='GET'&&p==='/api/ruview/snapshot')return reply(bridgeSensing(await feed.snapshot()));
     if(request.method==='GET'&&p==='/api/snapshot')return reply(await feed.snapshot());
     if(request.method==='GET'&&p==='/api/live'){
       if(!sameOrigin(request)||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return reply({error:'WebSocket origin required'},403);

@@ -1,5 +1,30 @@
 # PR notes — stock Deco research and macOS collectors
 
+## Latest continuation: existing RuView UI and measured scalar picture
+
+2026-10-17. The owner requested actual RuView UI deployment and inspection of
+its sensing inputs. [Playbook10](10-ruview-ui-bridge-mode.md) records the adapted
+UI, source mapping, experimental calculation, reproducer and limits. This
+supersedes the original-UI deployment gap in the previous continuation.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E77 | MEASURED source review and integration | SensingUpdate/NodeInfo/FeatureInfo/ClassificationInfo in sensing-server main.rs; existing UI shell/CSS/TabManager/SensingTab/GaussianSplatRenderer/PoseRenderer | Adapted original UI at authenticated /ruview/. Mean RSSI is supported; CSI variance/bands, subcarrier arrays, receiver positions, spatial field, person/pose/vital outputs are explicitly unavailable. New mapped schema is separate from Rust sensing_update. Stock backend bootstrap/training/pose-fusion/synthetic Observatory are not deployed |
+| E78 | SYNTHETIC mapping tests | test_sensing.mjs | Five cases cover units/cadence, controlled scalar step, noisy baseline, stale/synthetic denial, duplicates/gaps/current-sample mismatch. Initial bimodal fixture exposed zero-MAD spread; percentile guard added and case passes. Derived link_change never asserts human presence. Effective sample rate differs from median cadence; irregular samples have null Nyquist |
+| E79 | MEASURED isolated local integration | Reviewed local Worker/DO via literal127.0.0.1; actual existing bridge snapshot, then an explicitly local unavailable-frame collection reset | New UI/assets/mapped API deny anonymous access; authenticated routes200. Real RSSI projects correctly; pose and CSI variance stay null. Publisher collection change clears prior history/labels. Test data never published to production; native app untouched |
+| E80 | MEASURED deployment and live acceptance | Cloudflare reviewed bundle upload; check_deployment.py using private config | Final deployment b438328f980d41cf9ccf3e868ebff27d, etag69079906820bbd80822bdc0ce3af2f10f7751c780d7f9ea50b4d50430d9aa429, migrationv1. Initial revision14caf2d37b524f7ca05600e2b374c4a1 produced one WebSocket403 after invitation refresh; later unchanged-code check passed sequence838→839 and a separate101 upgrade. Recovery is consistent with documented mixed-version deployment propagation, not a proven cause. Final revision acceptance passes sequence1003→1004, update envelope,19distinct RF samples,8nodes/12clients,4probes, RSSI−50dBm/noise−89dBm; mapped sensing live/stable_link with all person/CSI/pose/vital capabilities false. No auth bypass or retry loop |
+| E81 | MEASURED UI rendering | Actual private hosted page; Dashboard→Hardware→Live Demo→Sensing; desktop,768×1024 and390×844 viewport checks | Live real RF/noise/time traces,8nodes/12clients, raw node levels, input matrix and nullable mapped JSON render. Empty pose renderer correctly has no invented body. Responsive panels stack; viewport restored and page left open. Private screenshots outside Git. No actual iPad/Safari/cellular or motion accuracy claim |
+| E82 | MEASURED bounded faster scalar trial | Existing packaged mac-radio --samples 45 --interval 1; owner-only JSONL witness |45/45 available over44.61seconds, median timestamp interval1second, RSSI−48..−47dBm, standard deviation0.442dB. No movement labels/ground truth. Proves helper output cadence, not independent RF refresh, CSI or human tracking. Installed5second RF acquisition and protected router polling unchanged |
+| E83 | MEASURED verification and recovery | Focused Python/cloud/UI client tests; type/build/dry-run/audit; private installed bridge snapshots |49 Python,10 cloud Node and23 existing mesh/WebSocket Node tests pass. Build/type generation, dry run and audit pass (zero reported vulnerabilities). Mac app was closed overnight; reopened RF and owner-local login restored8nodes/12clients. Publisher resumed. Same owner invitation refreshed for8hours without a new recipient/role. No password saved, router writes, firmware changes, radio-mode change or privileged capture. Native Rust/CI and held-out movement acceptance remain open |
+
+Current code includes a shared scalar mapper, private original-UI asset bundle,
+same-origin live client, input matrix and experimental change indicator. Privacy
+and invitation boundaries remain as in the previous cloud slice. Three.js is
+bundled at pinned r128 compatibility; hosted font requests removed and MIT
+notices provided. Current UI allows inline CSS for existing component styles;
+scripts remain same-origin only. Private configuration/raw captures stay outside
+Git, and the companion / remains available independently.
+
 ## Latest continuation: deployed private companion and live experiments
 
 The owner authorized cloud deployment and chose private application
