@@ -36,6 +36,7 @@ the native Rust tracking backend remains undeployed. See
 | [10 RuView UI bridge mode](10-ruview-ui-bridge-mode.md) | Reuse the original interface and map expected inputs to the live bridge | Deployed private UI, live scalar picture and explicit unknown tracking fields |
 | [11 Device-to-node attachments](11-device-node-associations.md) | Show node-filtered membership, ages and observed attachment changes | MEASURED eight-node sweep and live cloud acceptance; unknown/conflicting claims preserved; physical roam validation open |
 | [12 Private room map](12-private-room-map.md) | Owner-authored floor zones and router anchors with live device attachments | MEASURED eight room bindings/full sweep/cloud acceptance; private editable schematic; geometry refinement open |
+| [13 RF field and movement calibration](13-rf-field-and-movement-calibration.md) | Adjustable 3D spheres/overlap, observed changes and labelled still/walking comparison | Modeled coverage is uncalibrated; controlled human-motion acceptance remains open |
 
 Start with [PR notes](PR-NOTES.md), then [CC handoff](CC-HANDOFF.md). Keep the
 PR description and these notes synchronized as evidence changes. Sources and

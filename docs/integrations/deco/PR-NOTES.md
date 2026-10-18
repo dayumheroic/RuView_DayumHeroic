@@ -1,5 +1,31 @@
 # PR notes — stock Deco research and macOS collectors
 
+## Latest continuation: 3D coverage model and movement trial surface
+
+2026-10-17. [Playbook13](13-rf-field-and-movement-calibration.md) records formulas,
+source limits and the physical acceptance gate. The owner requested router
+spheres/overlap and movement inference. The RF Field tab now opens by default;
+the visualization is delivered, while human-motion validation remains open.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E100 | CLAIMED research / implemented model | Primary radio-tomography paper linked in playbook13; rf-field.mjs | Many known RF links and calibrated spatial sensitivity are a plausible research route. Current input is one unlocated Mac RSSI stream plus coarse node categories; no human motion, size or localization formula is accepted from these inputs. Explicit log-distance assumptions drive schematic spheres/overlap; conversion to power does not create missing RF phase/CSI |
+| E101 | SYNTHETIC tests / MEASURED software gates | Cloud npm test/check/build, audit and Wrangler dry run |26cloud tests pass, including six new tests for conversion/radius/overlap/anchor provenance/change deduplication/trial comparisons. Types/binding generation, bundle and dry run pass; audit reports zero vulnerabilities. Existing native collector and publisher unchanged; prior native/client test results remain historical, not rerun claims |
+| E102 | SYNTHETIC isolated browser | Temporary literal127.0.0.1 renderer fixture with generic eight-node/two-floor layout | Actual bundled Three.js renderer displayed spheres/overlap, floor filtering reduced eight shown anchors to four, and label buttons produced an empty-data trial table. Source fixtures were explicitly labelled synthetic, never published to production. Fixture tab/server closed; no router/network-mode change |
+| E103 | MEASURED private deployment and access renewal | Reviewed multipart upload, existing private configuration and browser login | Initial Worker version a341d42cb0ec4a2492d995a4fdfda462; current40b83bc805d74f32880527e58d0ce4e9, etag ee19cad7bcd05e6dec9a3c759335e6e595d0389fadd04231af8dbfc9b074c0a0. Owner invitation had expired; existing sole-owner capability renewed24hours with private backup/file, same eight-hour cookie maximum, no new viewer. Same native login preserved, no publisher/collector restart |
+| E104 | MEASURED failed stream gates and recovery | check_deployment.py, bounded HTTP/WebSocket diagnostic reads, uploaded-content/version/settings checks | Initial signed-in reads passed but upgrade returned403/Denied. A diagnostic-only split of subscription-auth/upgrade errors retained authorization. A later probe still returned old Denied despite current uploaded content; explicit100%deployment4ef77400-e677-45b3-b0a9-c0e5061a0153 and later propagation preceded101 and advancing frames. Exact transient cause is unproven; no auth bypass, namespace change, migration or state deletion. A subsequent all-associations gate failed while a report expired; ordinary collector later refreshed all eight |
+| E105 | MEASURED core production gate | check_deployment.py --require-floorplan | PASS8configured rooms/8bound nodes, WebSocket837→838/update,19distinct RF samples, RSSI−50/noise−91dBm,4probes,7then-current node observations/9attributed clients. Anonymous/cross-origin denial, secure cookie and publisher/viewer isolation pass. Full fresh sweep is a separate gate; stale/unknown reports are shown explicitly |
+| E106 | MEASURED hosted field/source changes; physical trial deferred | Authenticated RF Field tab and existing normalized loopback snapshot | Eight configured anchors and eight room bindings render, with live scalar data and actual ordinal quality changes at source times. Dashed retained attachment transitions render separately. Owner began preparing a trial then asked to defer for family activity; shared label cleared and page reset ready for a new baseline. No completed controlled still/walking comparison, detection accuracy, body size or trajectory claim. Private proof images remain outside Git |
+
+| E107 | MEASURED final full production gate | check_deployment.py --require-associations --require-floorplan after actual local refresh reached eight groups | PASS8rooms/8unique bindings/8node observations,9attributed records among11current clients, WebSocket846→847/update,20distinct RF samples, RSSI−53/noise−87dBm,4probes. Anonymous/cross-origin denial, cookie and publisher/viewer isolation pass; all CSI/human-presence/pose/vital capabilities false. Actual field screenshot retained privately; no controlled movement trial completed |
+
+The model parameters are assumptions and never fed back into sensing outputs.
+The mapper retains null CSI/person/pose/vital fields. Router anchors/floor scales
+remain owner-authored approximate geometry. No flashing, router write, capture
+mode, faster polling, additional recipient or saved router password was added.
+Next: begin a fresh owner-labelled still/walking trial when the owner returns;
+repeat with independent controls before accepting human-motion inference.
+
 
 
 

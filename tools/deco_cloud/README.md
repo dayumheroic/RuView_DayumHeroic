@@ -136,3 +136,20 @@ room_bindings. Private labels/notes are intentionally stored as authenticated
 owner configuration; photos/raw router names do not pass through telemetry.
 Keep seed JSON, source images and name bindings outside Git. See
 [playbook12](../../docs/integrations/deco/12-private-room-map.md).
+
+## RF Field and movement trial
+
+The RF Field tab opens by default in `/ruview/`. It renders known owner-placed
+router anchors as an adjustable isotropic coverage model in schematic units,
+with floor overlap tiles, orbit/zoom, per-floor filtering and explicit
+uncalibrated assumptions. Real node-quality changes and reported attachment
+transitions have separate source-timestamped highlights. Mac RSSI stays a
+single unlocated link; it does not set every sphere's radius. No synthetic
+people, paths, CSI or measured spatial field are emitted.
+
+Owner-only still/walking buttons use the existing label API and compare distinct
+retained RSSI samples after the trial start. The UI shows sample count/span,
+median, MAD, variance and a received-power ratio only when both windows have
+enough observations. Labels describe actual owner actions; movement detection,
+size and localization remain unvalidated. See
+[playbook13](../../docs/integrations/deco/13-rf-field-and-movement-calibration.md).

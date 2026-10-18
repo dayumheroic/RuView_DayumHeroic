@@ -1,5 +1,50 @@
 # CC handoff — stock Deco research
 
+## Latest continuation: 3D RF Field deployed; calibration paused
+
+2026-10-17: playbook13 and E100–E107 cover the RF Field tab. Generic modules
+rf-field.mjs/rf-field-ui.mjs/rf-field.css render eight owner-placed anchors,
+adjustable uncalibrated spheres, per-floor overlap tiles, actual quality changes
+and reported attachment transitions. Original scalar sensing remains separate.
+No measured spatial field, human/body positions, CSI or pose is synthesized.
+Same-floor spheres use generic log-distance assumptions in drawing units;
+cross-floor tiles additionally apply an assumed floor loss. Mac RSSI belongs
+to one unlocated link and does not set every router's radius.
+
+The existing owner-only label API now has controls beside the 3D scene. A trial
+needs distinct still/walking samples, at least eight and a30second span per
+condition; UI suggests90seconds each. It compares median/MAD/variance and power
+ratio, not accuracy or presence. Owner agreed to test, then requested a pause
+for family activity. Shared label was cleared and the field page reloaded ready
+for a fresh trial. Do not call the intervening household activity calibration.
+When the owner returns, ask them to mark real actions with Mac stationary.
+
+Owner app invitation had expired. The existing sole-owner capability was
+renewed24hours privately; an owner-only local access file was created/opened.
+Do not paste its contents into Git/chat or use the Deco password for cloud login.
+Cookie maximum remains eight hours. Existing authenticated native/publisher
+session was preserved throughout; no restart or new router sign-in is needed.
+
+Current Worker version40b83bc805d74f32880527e58d0ce4e9, explicit100%deployment
+4ef77400-e677-45b3-b0a9-c0e5061a0153. Migrationv1 and cloud plan revision2 retained.
+Initial upgrades returned403/Denied after renewal even after current uploaded
+content had a more specific error. After explicit activation and propagation,
+upgrade101/advancing real frames passed. Precise transient cause unproven; retain
+that failure in evidence rather than assuming every upload immediately updates
+all subscriptions. Auth checks were never disabled. The core floor-plan gate
+passed8bound rooms, WebSocket837→838 and live RF; a full-association check caught
+an expired report, later native read showed eight groups/no failure. Inspect
+source times before claiming a simultaneous complete attachment census.
+Final full gate E107 then passed8rooms/8bindings/8node reports,9attributed
+clients and WebSocket846→847, with20distinct RF samples. Physical trial is still
+paused; this verifies delivery and attribution, not motion accuracy.
+
+26cloud tests, type/binding generation, build, audit and dry run pass. Isolated
+synthetic browser fixture verified 3D/floor controls and label UI; its tab/server
+are closed and no fixture entered production. Actual private hosted view shows
+all eight anchors and genuine ordinal report changes, not controlled motion.
+No RF cadence/permissions/radio mode/hardware configuration changed.
+
 
 
 

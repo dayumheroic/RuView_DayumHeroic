@@ -88,7 +88,8 @@ export class HomeFeed extends DurableObject {
   async annotate(value){if(value==='unlabelled')this.sql.exec('DELETE FROM label WHERE id=1');else this.sql.exec('INSERT OR REPLACE INTO label VALUES(1,?,?)',value,Date.now());this.broadcast(this.snapshot());return {accepted:true};}
   async fetch(request){
     const viewer=viewerForHash(request.headers.get('X-Viewer-Hash'),entries(this.env));
-    if(!viewer||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return reply({error:'Denied'},403);
+    if(!viewer)return reply({error:'Subscription authentication required'},403);
+    if(request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return reply({error:'Subscription upgrade required'},403);
     if(this.ctx.getWebSockets().length>=12)return reply({error:'Viewer limit'},429);
     const pair=new WebSocketPair();const [client,server]=Object.values(pair);
     this.ctx.acceptWebSocket(server);server.serializeAttachment({hash:viewer.hash,expires:Math.min(viewer.expires,Date.now()+8*60*60*1000)});
