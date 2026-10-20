@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="bridge-bootstrap" content="BRIDGE_BOOTSTRAP">
+  <title>RuView · Deco Bridge</title>
+  <link rel="stylesheet" href="mesh.css">
+  <script type="module" src="mesh.mjs"></script>
+</head>
+<body>
+  <main>
+    <header><div class="brand">R<span>•</span> RuView <small>/ DECO BRIDGE</small></div><span class="local">LOCAL TO THIS MAC</span></header>
+    <section class="intro"><p class="eyebrow">NETWORK OBSERVATORY</p><h1>Your mesh, in view.</h1><p>Current-link radio measurements and stock Deco telemetry, with a clear source for every reading.</p></section>
+    <form id="bridge-form" class="panel" hidden>
+      <h2>Connect to the companion</h2><p>Open the Mac app for automatic local access, or enter its private bridge key. This is separate from your Deco password.</p>
+      <div class="form-row"><label>Bridge URL<input id="bridge-url" type="url" value="http://127.0.0.1:8766" required></label><label>Bridge access key<input id="bridge-key" type="password" autocomplete="off" required maxlength="64"></label><button>Connect bridge</button></div>
+    </form>
+    <div class="status-line" role="status" aria-live="polite"><span id="connection">Connecting to companion…</span><span id="updated">Waiting for measurements</span></div>
+    <div class="grid">
+      <section class="panel radio"><div class="section-heading"><h2>Mac Wi-Fi link</h2><span id="rf-state" class="pill">Disconnected</span></div><p class="caption">MEASURED · CoreWLAN · one associated link</p>
+        <div class="signal-value"><strong id="rssi">—</strong><span>dBm RSSI</span></div>
+        <svg id="signal-chart" viewBox="0 0 600 120" role="img" aria-label="Recent RSSI samples from minus 100 to minus 20 dBm"><path class="guide" d="M0 30H600 M0 60H600 M0 90H600"></path><polyline id="signal-line" points=""></polyline></svg>
+        <p class="caption">Recent available samples · fixed −100 to −20 dBm scale · gaps break the trace</p>
+        <div class="metrics"><div><span>Noise</span><strong id="noise">—</strong></div><div><span>Channel</span><strong id="channel">—</strong></div><div><span>Transmit link rate</span><strong id="tx-rate">—</strong></div></div>
+        <p class="caption">Link rate describes the Mac’s Wi-Fi connection; it is not an internet speed test.</p>
+      </section>
+      <section class="panel"><div class="section-heading"><h2>Deco telemetry</h2><span id="mesh-state" class="pill">Disconnected</span></div><p class="caption">Owner-authenticated · fixed read operations · 30-second polling</p>
+        <div class="counts"><div><strong id="node-count">—</strong><span id="node-label">mesh nodes</span></div><div><strong id="client-count">—</strong><span id="client-label">client records</span></div></div>
+        <p id="mesh-message">Waiting for the local bridge.</p><p id="mesh-age" class="caption">No API capture yet</p>
+        <button id="pause" type="button" class="secondary" disabled>Pause Deco reads</button>
+        <button id="reconnect" type="button" hidden>Reconnect Deco</button>
+        <p id="recovery-message" class="caption" hidden></p>
+      </section>
+    </div>
+    <section class="panel" id="signin-panel" hidden>
+      <div class="section-heading"><h2>Connect your Deco</h2><span class="pill">LOCAL SIGN-IN</span></div>
+      <p>Enter the network owner’s TP-Link password here. It goes through the local companion to the pinned router and stays in memory for this run.</p>
+      <p class="caption">Target <strong id="deco-target">—</strong> · SHA256 leaf certificate</p><code id="deco-pin"></code>
+      <form id="deco-form">
+        <label class="check"><input id="confirm-pin" type="checkbox" required>I compared this fingerprint with the certificate in my trusted Deco browser tab.</label>
+        <div class="form-row"><label>Owner TP-Link password<input id="deco-password" type="password" autocomplete="off" maxlength="1024" required></label><button id="signin">Read Deco telemetry</button></div>
+      </form>
+      <p class="caption">A rejected login stops collection. Use Reconnect Deco to return here after the 30-second sign-in cooldown. No automatic password retries or saved owner password.</p>
+    </section>
+    <section class="panel" id="clients-panel" hidden><div class="section-heading"><h2 id="clients-title">Device records</h2><span class="pill">SESSION ALIASES</span></div><p class="caption">Aliases change when collection restarts. Rate units have not yet been checked against this firmware’s UI.</p><div class="table-scroll"><table><thead><tr><th>Device alias</th><th>Online field at observation</th><th>Download · raw</th><th>Upload · raw</th></tr></thead><tbody id="clients"></tbody></table></div></section>
+    <section class="boundary"><span class="boundary-icon">i</span><div><strong>Telemetry has a defined boundary.</strong><p>This bridge supplies network records and scalar radio measurements. Complex CSI, human presence, breathing, heart rate and body pose are unavailable from these inputs.</p></div></section>
+    <footer><span>RuView companion · research preview</span><span>No flashing · no router configuration writes</span></footer>
+  </main>
+</body>
+</html>

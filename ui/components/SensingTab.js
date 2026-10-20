@@ -11,8 +11,11 @@ import { GaussianSplatRenderer } from './gaussian-splats.js';
 
 export class SensingTab {
   /** @param {HTMLElement} container - the #sensing section element */
-  constructor(container) {
+  constructor(container, options = {}) {
     this.container = container;
+    this.service = options.service || sensingService;
+    this.telemetry = options.telemetry === true;
+    this.three = options.three;
     this.splatRenderer = null;
     this._unsubData = null;
     this._unsubState = null;
@@ -22,10 +25,24 @@ export class SensingTab {
 
   async init() {
     this._buildDOM();
+    if (this.telemetry) this._buildTelemetryDOM();
     await this._loadThree();
     this._initSplatRenderer();
     this._connectService();
     this._setupResize();
+  }
+
+  _buildTelemetryDOM() {
+    this.container.innerHTML = `
+      <h2>Live WiFi Sensing · bridge mode</h2>
+      <div id="sensingSourceBanner" class="sensing-source-banner" role="status">Waiting for measured data</div>
+      <p>Time and received power, not room coordinates. Cyan is RSSI; violet is noise. Drag to rotate. No body or spatial field is inferred.</p><p id="bridgeSceneScale"></p>
+      <div class="sensing-layout"><div class="sensing-viewport" id="sensingViewport"></div>
+      <div class="sensing-panel"><div class="sensing-card"><div class="sensing-card-title">Measured link</div>
+      <div id="sensingRssi" class="sensing-big-value">— dBm</div><canvas id="sensingSparkline" width="200" height="40"></canvas>
+      <p id="bridgeScalar">Waiting for observations</p></div>
+      <div class="sensing-card"><div class="sensing-card-title">Derived link change · experimental</div><strong id="bridgeChange">COLLECTING</strong><p id="bridgeDelta"></p><p>Rolling median comparison with noise guards; a signal change can come from traffic, roaming, interference or movement. This does not classify human presence.</p></div>
+      <div class="sensing-card"><div class="sensing-card-title">What is missing</div><p>CSI amplitudes/phase, receiver positions, high-rate motion bands and validated pose. Mesh nodes are not eight CSI receivers.</p></div></div></div>`;
   }
 
   // ---- DOM construction --------------------------------------------------
@@ -145,6 +162,7 @@ export class SensingTab {
   // ---- Three.js loading --------------------------------------------------
 
   async _loadThree() {
+    if (this.three) { this._threeLoaded = true; return; }
     if (window.THREE) {
       this._threeLoaded = true;
       return;
@@ -173,6 +191,7 @@ export class SensingTab {
 
     try {
       this.splatRenderer = new GaussianSplatRenderer(viewport, {
+        three: this.three, telemetry: this.telemetry,
         width: viewport.clientWidth,
         height: viewport.clientHeight || 500,
       });
@@ -185,10 +204,10 @@ export class SensingTab {
   // ---- Service connection ------------------------------------------------
 
   _connectService() {
-    sensingService.start();
+    this.service.start();
 
-    this._unsubData = sensingService.onData((data) => this._onSensingData(data));
-    this._unsubState = sensingService.onStateChange((state) => this._onStateChange(state));
+    this._unsubData = this.service.onData((data) => this._onSensingData(data));
+    this._unsubState = this.service.onStateChange((state) => this._onStateChange(state));
   }
 
   _onSensingData(data) {
@@ -198,6 +217,17 @@ export class SensingTab {
     }
 
     // Update HUD
+    if (this.telemetry) {
+      const number=(x,unit,digits=1)=>Number.isFinite(x)?x.toFixed(digits)+unit:'—';
+      this._setText('sensingRssi', number(data.scalar.rssi_dbm,' dBm'));
+      this._setText('sensingSourceBanner', data.source_state==='live'?'MEASURED · MAC COREWLAN · SCALAR ONLY':'STALE / UNAVAILABLE · NO CURRENT MEASUREMENT');
+      this._setText('bridgeScalar', `Noise ${number(data.scalar.noise_dbm,' dBm')} · SNR ${number(data.scalar.snr_db,' dB')} · RSSI variance ${number(data.scalar.rssi_variance_db2,' dB²',3)} · ${data.scalar.sample_count} samples · ${number(data.scalar.sample_hz,' Hz',3)}`);
+      this._setText('bridgeChange', data.change.state.replaceAll('_',' ').toUpperCase());
+      this._setText('bridgeDelta', `Recent-minus-baseline ${number(data.change.delta_db,' dB')} · threshold ${number(data.change.threshold_db,' dB')} · human presence UNKNOWN`);
+      this._setText('bridgeSceneScale', data.history.length?`X: ${new Date(data.history[0].time).toLocaleTimeString()} → ${new Date(data.history.at(-1).time).toLocaleTimeString()} · Y: −100 to −20 dBm · Z: separate RSSI/noise lanes, not physical distance`:'No fresh signal trace');
+      this._drawSparkline();
+      return;
+    }
     this._updateHUD(data);
 
     // Update per-node panels
@@ -205,6 +235,7 @@ export class SensingTab {
   }
 
   _onStateChange(state) {
+    if (this.telemetry) { if(state!=='connected')this._setText('sensingSourceBanner','RECONNECTING · LAST OBSERVATION MAY BE STALE'); return; }
     const dot    = this.container.querySelector('#sensingDot');
     const text   = this.container.querySelector('#sensingState');
     const banner = this.container.querySelector('#sensingSourceBanner');
@@ -300,7 +331,8 @@ export class SensingTab {
     const canvas = this.container.querySelector('#sensingSparkline');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const history = sensingService.getRssiHistory();
+    const history = this.service.getRssiHistory();
+    if (this.telemetry) ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (history.length < 2) return;
 
     const w = canvas.width;
@@ -398,6 +430,6 @@ export class SensingTab {
     if (this._unsubState) this._unsubState();
     if (this._resizeObserver) this._resizeObserver.disconnect();
     if (this.splatRenderer) this.splatRenderer.dispose();
-    sensingService.stop();
+    this.service.stop();
   }
 }

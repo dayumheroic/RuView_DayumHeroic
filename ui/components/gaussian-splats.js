@@ -80,10 +80,12 @@ export class GaussianSplatRenderer {
    * @param {number}      [opts.height] - canvas height (default 500)
    */
   constructor(container, opts = {}) {
-    const THREE = getThree();
+    const THREE = opts.three || getThree();
     if (!THREE) throw new Error('Three.js not loaded');
 
     this.container = container;
+    this.telemetry = opts.telemetry === true;
+    this._THREE = THREE;
     this.width  = opts.width  || container.clientWidth || 800;
     this.height = opts.height || 500;
 
@@ -102,6 +104,11 @@ export class GaussianSplatRenderer {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(this.renderer.domElement);
 
+    if (this.telemetry) {
+      this.scene.add(new THREE.GridHelper(20,20,0x24545a,0x112a36));
+      this.traces = new THREE.Group(); this.scene.add(this.traces);
+      this._setupMouseControls(); this._animate(); return;
+    }
     // Grid & room
     this._createRoom(THREE);
 
@@ -305,6 +312,7 @@ export class GaussianSplatRenderer {
   update(data) {
     this._lastData = data;
     if (!data) return;
+    if (this.telemetry) { this._updateTelemetry(data); return; }
 
     const features = data.features || {};
     const classification = data.classification || {};
@@ -416,10 +424,26 @@ export class GaussianSplatRenderer {
     }
   }
 
+  _updateTelemetry(data) {
+    // Plot real history on two labelled source lanes. No room, router or body.
+    for(const line of [...this.traces.children]) { this.traces.remove(line);line.geometry.dispose();line.material.dispose(); }
+    const history=data.source_state==='live'?data.history:[],THREE=this._THREE;
+    if(!history.length)return;
+    const end=history.at(-1).time,begin=Math.max(history[0].time,end-120000);
+    for(const [key,color,z] of [['rssi',0x32d8e6,-2],['noise',0xb794f4,2]]){
+      const points=history.filter(h=>Number.isFinite(h[key])).map(h=>new THREE.Vector3(
+        -9+18*(h.time-begin)/Math.max(5000,end-begin),1+8*(Math.max(-100,Math.min(-20,h[key]))+100)/80,z));
+      if(points.length<2)continue;
+      const geometry=new THREE.BufferGeometry().setFromPoints(points);
+      this.traces.add(new THREE.Line(geometry,new THREE.LineBasicMaterial({color})));
+    }
+  }
+
   // ---- Render loop -------------------------------------------------------
 
   _animate() {
     this._animFrame = requestAnimationFrame(() => this._animate());
+    if(this.telemetry&&(document.hidden||this.container.offsetParent===null))return;
 
     // Gentle router glow pulse
     if (this.routerMarker) {
@@ -444,6 +468,7 @@ export class GaussianSplatRenderer {
     if (this._animFrame) {
       cancelAnimationFrame(this._animFrame);
     }
+    this.scene.traverse(obj=>{obj.geometry?.dispose();const mats=Array.isArray(obj.material)?obj.material:[obj.material];for(const mat of mats)mat?.dispose();});
     this.renderer.dispose();
     if (this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
