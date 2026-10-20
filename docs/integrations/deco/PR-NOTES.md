@@ -1,5 +1,25 @@
 # PR notes — stock Deco research and macOS collectors
 
+## Latest continuation: OpenWrt source and installation feasibility
+
+2026-10-20. Owner supplied CC's asset-import account and asked about replacing
+firmware, companion software and OTA versus Ethernet. Read-only research is
+recorded in [playbook06](06-raw-telemetry-research.md). This does not authorize
+or perform firmware installation, debug firmware, recovery mode or router writes.
+
+| ID | Label | Reproducer/source | Actual result / limit |
+|---|---|---|---|
+| E108 | MEASURED source inventory / CLAIMED import provenance | improvements clean status; git fetch --no-recurse-submodules origin; git show/ls-tree origin/HEAD | Remote a2cd776 contains networking/openwrt and networking/openwrt-docs. ASSET pins upstream0d245fdaeae5c890c8aa997fadcf9287a707558f;154text pages and no per-device hardware pages confirmed. Canonical/mirror equality was not independently rechecked. Checkout preserved at its prior commit; only refs/objects fetched. One initial shell glob and assumed .gitmodules path were absent; corrected exact-path reads completed |
+| E109 | MEASURED static source / CLAIMED device support | Pinned ipq40xx generic-tp-link.mk, ath79 generic-tp-link.mk and DTS paths; upstream support commits and official indexed hardware entries linked in playbook06 | M5v1/v2/v3 targets and upstream V320 discussion; M4Rv1/v2 shared-image release support. M5 currently listed snapshot. No verified E4Rv4 target established. Region/physical labels/flash chips/current-image boot and rollback remain unvalidated; M4v2 must not use v4 images |
+| E110 | MEASURED installation-source inspection / untested hardware | Upstream M5 and M4R support commit messages read through GitHub and API | M5 documents wired LAN/TFTP recovery; M4R historical route involves signature restrictions and signed debug firmware. Normal vendor OTA delivery is not proof that custom firmware can use the same updater. No image, shell, debug service, firmware write or recovery-mode action performed |
+| E111 | MEASURED telemetry interface source / feasibility only | Pinned hostapd README get_clients example and upstream documentation | Per-associated-client signal and rate/capability fields make an OpenWrt collector plausible. Availability/cadence/units require real driver evidence. Installing OpenWrt elsewhere does not expose stock Deco radio internals; CSI/human-motion/size/localization/range claims remain unvalidated. Wiki bot/errors handled through indexed primary entries and upstream source, not bypassed |
+
+Research documents only; no runtime/deployment/native/publisher change or
+household capture. Future hardware work needs a concrete verified target/image,
+recovery/rollback plan and explicit owner go-ahead. Prefer an isolated secondary
+node while preserving the primary stock hub. Source read success is not boot,
+flash or sensing validation. Calibration remains deferred from the prior turn.
+
 ## Latest continuation: 3D coverage model and movement trial surface
 
 2026-10-17. [Playbook13](13-rf-field-and-movement-calibration.md) records formulas,

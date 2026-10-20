@@ -1,5 +1,29 @@
 # CC handoff — stock Deco research
 
+## Latest continuation: OpenWrt feasibility only
+
+2026-10-20: playbook06 and E108–E111 inspect the newly added improvements asset
+at remote a2cd776. Source ASSET pins upstream0d245fdaeae5c890c8aa997fadcf9287a707558f.
+The154-page docs export omits per-device hardware pages. Remote refs/objects
+were fetched read-only; the existing improvements checkout remains unchanged.
+No build, downloaded program, recovery, debug firmware or hardware write ran.
+
+M5 support source explicitly discusses V320, but its current hardware page lists
+snapshot support and flash-chip issues require exact checking. M4Rv1/v2 share
+a supported image; the original installation route has signed-debug-firmware
+requirements, not a generic stock OTA upload. Current installed firmware and
+bootloader acceptance remain unverified. E4Rv4 support is not established.
+Physical labels/region, a pinned suitable image and documented recovery/rollback
+are gates before proposing an isolated secondary-node conversion. Do not touch
+the primary hub or treat the owner's feasibility question as a flash command.
+
+OpenWrt is replacement firmware; a VM/appliance companion cannot unlock stock
+radio internals. An on-router agent could use per-associated-client signal/rate
+interfaces after a compatible installation. This does not establish CSI or human
+movement. Plan wired Ethernet for initial recovery; Cat6 is not specifically
+required. Proprietary Deco mesh/app membership must not be assumed afterward.
+Existing bridge/deployment/session unchanged; calibration remains deferred.
+
 ## Latest continuation: 3D RF Field deployed; calibration paused
 
 2026-10-17: playbook13 and E100–E107 cover the RF Field tab. Generic modules

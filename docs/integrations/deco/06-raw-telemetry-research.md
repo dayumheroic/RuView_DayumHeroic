@@ -75,6 +75,59 @@ after viewing the page. No clear/export button, email action, logging setting,
 debug daemon, reboot or firmware action was invoked. Keep these callbacks out
 of the strict collector allowlist until preparation is separately characterized.
 
+## OpenWrt feasibility continuation — 2026-10-20
+
+Owner asked whether the newly added OpenWrt asset can replace stock firmware,
+run as companion software, or use the vendor's wireless update path. This is
+feasibility research only; the existing no-flashing boundary remains in effect
+for hardware actions. No image was built/uploaded and no router was changed.
+
+The improvements remote commit `a2cd776` adds `networking/openwrt` and its sibling
+documentation export. Its ASSET record pins upstream source
+`0d245fdaeae5c890c8aa997fadcf9287a707558f`. Read-only tree/source inspection
+confirmed device targets and154exported text pages, with no per-device hardware
+wiki pages. Only remote refs/objects were fetched; its checkout was not reset,
+fast-forwarded or executed. The asset's canonical/mirror equality is recorded
+provenance, not a comparison independently repeated in this continuation.
+
+| Existing inventory | Source-backed feasibility | Remaining gate |
+|---|---|---|
+| M5, UI suffix3.2 | [Upstream support commit](https://github.com/openwrt/openwrt/commit/c60be6e983d95c971dc5659afb882eaeac9d01ca) explicitly discusses V320 hardware and supplies v1/v2/v3 targets. The current [device page](https://openwrt.org/toh/tp-link/deco_m5) lists snapshot support. Initial installation is documented through wired LAN/TFTP recovery | Physical label/region/flash variant, current image and known flash-chip limitations, exact-firmware recovery and rollback remain unvalidated |
+| M4R, UI suffix2.0 | [Hardware entry](https://openwrt.org/toh/hwdata/tp-link/tp-link_m4r_v1) lists v1/v2 together with a shared image and release support. The [original support commit](https://github.com/openwrt/openwrt/commit/063e9047cc8b247ea4b04ee3248b99f3212a42f8) describes signature restrictions and a signed-debug-firmware installation route | Historical instructions do not establish that the currently installed firmware/bootloader accepts that route. Do not substitute v4 or nearby minor revisions |
+| E4R, UI suffix4.0 | No matching verified target was established by the inspected source/device search | Do not infer compatibility from M4R naming, chipset family or a firmware filename |
+
+OpenWrt is an embedded operating system and normally replaces the router's
+vendor firmware. Installing it in a Mac VM or on a separate appliance does not
+expose the stock Deco's private radio drivers. A custom RuView telemetry agent
+could run on a compatible OpenWrt router after installation. Running an agent
+inside stock firmware would instead need an independently verified legitimate
+execution/package interface; the OpenWrt source is not an add-on package for
+the existing Deco application.
+
+OTA describes firmware delivery, not image compatibility or installation
+authority. A stock updater may validate signatures, supported models and image
+layout. Vendor-signed updates over Wi-Fi do not establish an arbitrary-image
+installation path. Recovery can require Ethernet before Wi-Fi is running.
+For a future initial conversion, plan a direct wired connection; Cat6 is not
+specifically required. Later OpenWrt upgrades and initial stock conversion are
+different operations. No recovery service or debug firmware was started here.
+
+The inspected hostapd README documents `get_clients` with signal and per-client
+rate/capability fields. This is a plausible richer input than stock ordinal
+backhaul quality, subject to actual driver/firmware validation. It reports an
+AP's associated clients, not every device at every AP simultaneously. CSI
+export still requires a compatible instrumented driver/firmware path and real
+complex-sample evidence. OpenWrt support alone does not pass the CSI, movement,
+localization, range-improvement or body-size gates. A converted node should be
+treated as requiring separate AP/mesh configuration; continued proprietary
+Deco-app membership is not assumed. Preserve the main hub for any later isolated
+secondary-node evaluation.
+
+Some official wiki opens returned bot interstitials/internal errors. Support
+claims were cross-checked against indexed hardware entries, upstream commits
+and the pinned source, rather than treating those failed opens as content.
+No downloaded instructions or programs were executed. See E108–E111 in PR notes.
+
 ## Completion and recovery
 
 For a useful management bridge: one authenticated exact-firmware capture, field
